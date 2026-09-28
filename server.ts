@@ -81,8 +81,8 @@ app.get('/api/search', async (req, res) => {
       favicon: string;
     }> = [];
 
-    // 1. Fetch real DuckDuckGo Web Results from html.duckduckgo.com
-    const ddgHtmlUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
+    // 1. Fetch real DuckDuckGo Web Results from html.duckduckgo.com with French localization
+    const ddgHtmlUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}&kl=fr-fr`;
     const htmlResponse = await fetch(ddgHtmlUrl, {
       headers: {
         'User-Agent':

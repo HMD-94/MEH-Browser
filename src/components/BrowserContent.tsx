@@ -1208,13 +1208,35 @@ export const BrowserContent: React.FC<BrowserContentProps> = ({
   // =========================================================================
   // INTERNAL WEB PAGE VIEWER (PROXIED IN-TAB NAVIGATION)
   // =========================================================================
+  // Detect if running on a static host (GitHub Pages, etc.) without an active Node backend
+  const isStaticHost =
+    typeof window !== 'undefined' &&
+    (window.location.hostname.endsWith('github.io') ||
+      window.location.hostname.endsWith('.surge.sh') ||
+      window.location.protocol === 'file:');
+
   const isAdBlockActive = settings?.adBlockerEnabled !== false;
   const isStrictAdBlock = settings?.adBlockStrictness === 'aggressive';
   const blockCookies = settings?.adBlockCookieNotices !== false;
 
-  const proxiedSrc = `/api/proxy?url=${encodeURIComponent(url)}&adblock=${
-    isAdBlockActive ? '1' : '0'
-  }&strict=${isStrictAdBlock ? '1' : '0'}&cookies=${blockCookies ? '1' : '0'}`;
+  // Compute internal iframe source:
+  // On static hosting (like GitHub Pages), /api/proxy does NOT exist, which produces a GitHub 404 page.
+  // We use direct navigation on static hosting, and for Wikipedia we use mobile/direct view which embeds cleanly.
+  const getComputedIframeSrc = (): string => {
+    if (isStaticHost) {
+      if (url.includes('wikipedia.org')) {
+        return url
+          .replace('fr.wikipedia.org', 'fr.m.wikipedia.org')
+          .replace('en.wikipedia.org', 'en.m.wikipedia.org');
+      }
+      return url;
+    }
+    return `/api/proxy?url=${encodeURIComponent(url)}&adblock=${
+      isAdBlockActive ? '1' : '0'
+    }&strict=${isStrictAdBlock ? '1' : '0'}&cookies=${blockCookies ? '1' : '0'}`;
+  };
+
+  const proxiedSrc = getComputedIframeSrc();
 
   return (
     <div className="relative w-full h-full flex flex-col">
@@ -1272,6 +1294,18 @@ export const BrowserContent: React.FC<BrowserContentProps> = ({
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          {/* Direct External Link */}
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 hover:text-sky-200 border border-sky-400/30 transition-colors text-[11px] font-semibold"
+            title="Ouvrir le site en direct dans une nouvelle fenêtre externe"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Ouvrir en direct</span>
+          </a>
+
           {/* Add to bookmark button */}
           {onToggleBookmark && (
             <button
