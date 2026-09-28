@@ -509,11 +509,43 @@ async function generateClientFrenchSearchResults(query: string): Promise<{
     }
   }
 
-  // 2. Fetch live French Wikipedia Search API (articles with rich snippets)
+  // 2. Fetch Google France Search Suggestions & build related thematic result cards
+  try {
+    const suggestUrl = `https://suggestqueries.google.com/complete/search?client=chrome&hl=fr&gl=fr&q=${encodeURIComponent(
+      query
+    )}`;
+    const sRes = await fetch(suggestUrl);
+    if (sRes.ok) {
+      const sData = await sRes.json();
+      if (Array.isArray(sData[1])) {
+        const topSuggestions: string[] = sData[1].slice(0, 10);
+        for (const sug of topSuggestions) {
+          if (sug.toLowerCase() === cleanQ) continue;
+          const targetUrl = `https://www.google.fr/search?q=${encodeURIComponent(sug)}`;
+          if (!addedUrls.has(targetUrl)) {
+            addedUrls.add(targetUrl);
+            const sugCapitalized = sug.charAt(0).toUpperCase() + sug.slice(1);
+            results.push({
+              title: `${sugCapitalized} — Guide & Résultats France`,
+              url: targetUrl,
+              snippet: `Consultez les informations complètes, offres, actualités et avis pour « ${sug} » en direct sur le web français.`,
+              source: 'google.fr',
+              breadcrumb: `https://www.google.fr/search?q=${sug.replace(/\s+/g, '+')}`,
+              icon: 'https://www.google.com/s2/favicons?domain=google.fr&sz=64',
+            });
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Google suggest warning:', err);
+  }
+
+  // 3. Fetch live French Wikipedia Search API (up to 15 articles with rich snippets)
   try {
     const wikiUrl = `https://fr.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(
       query
-    )}&utf8=&format=json&origin=*&srlimit=8`;
+    )}&utf8=&format=json&origin=*&srlimit=15`;
     const wRes = await fetch(wikiUrl);
     if (wRes.ok) {
       const wData = await wRes.json();
@@ -544,32 +576,62 @@ async function generateClientFrenchSearchResults(query: string): Promise<{
     console.warn('Wikipedia search fallback warning:', err);
   }
 
-  // 3. Dynamic French Web Portal Actions for the query
+  // 4. Fetch Wikidata French Entities (for verified entity records)
+  try {
+    const wdUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(
+      query
+    )}&language=fr&format=json&origin=*&limit=8`;
+    const wdRes = await fetch(wdUrl);
+    if (wdRes.ok) {
+      const wdData = await wdRes.json();
+      if (Array.isArray(wdData.search)) {
+        for (const entity of wdData.search) {
+          if (!entity.label || !entity.description) continue;
+          const entityUrl = entity.concepturi || `https://www.wikidata.org/wiki/${entity.id}`;
+          if (!addedUrls.has(entityUrl)) {
+            addedUrls.add(entityUrl);
+            results.push({
+              title: `${entity.label} — Fiche officielle (${entity.description})`,
+              url: entityUrl,
+              snippet: `Données structurées et référentiel vérifié : ${entity.description}. Identifiant international : ${entity.id}.`,
+              source: 'wikidata.org',
+              breadcrumb: entityUrl,
+              icon: 'https://www.google.com/s2/favicons?domain=wikidata.org&sz=64',
+            });
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Wikidata search warning:', err);
+  }
+
+  // 5. Dynamic French Web Portal Actions for the query
   const queryCapitalized = query.charAt(0).toUpperCase() + query.slice(1);
   const portals = [
     {
-      title: `Actualités en direct : « ${query} »`,
+      title: `Google Actualités France : « ${query} »`,
       url: `https://news.google.fr/search?q=${encodeURIComponent(query)}`,
       snippet: `Consulter les derniers articles de presse et reportages d'actualité concernant ${query} en direct sur Google Actualités France.`,
       source: 'news.google.fr',
       icon: 'https://www.google.com/s2/favicons?domain=news.google.fr&sz=64',
     },
     {
-      title: `Vidéos et reportages : « ${query} »`,
+      title: `Vidéos et reportages YouTube : « ${query} »`,
       url: `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`,
       snippet: `Regarder les vidéos, tutoriels, analyses et émissions consacrées à ${query} sur YouTube France.`,
       source: 'youtube.com',
       icon: 'https://www.google.com/s2/favicons?domain=youtube.com&sz=64',
     },
     {
-      title: `Définitions et explications : « ${queryCapitalized} »`,
+      title: `Définitions et étymologie Wiktionnaire : « ${queryCapitalized} »`,
       url: `https://fr.wiktionary.org/wiki/${encodeURIComponent(cleanQ)}`,
       snippet: `Consulter l'étymologie, les définitions lexicales et les synonymes complets de ${query} sur le Wiktionnaire francophone.`,
       source: 'fr.wiktionary.org',
       icon: 'https://www.google.com/s2/favicons?domain=wiktionary.org&sz=64',
     },
     {
-      title: `Petites annonces et offres pour « ${query} »`,
+      title: `Petites annonces Leboncoin pour « ${query} »`,
       url: `https://www.leboncoin.fr/recherche?text=${encodeURIComponent(query)}`,
       snippet: `Trouver des annonces de particuliers et professionnels liées à ${query} sur le site numéro 1 en France Leboncoin.`,
       source: 'leboncoin.fr',
@@ -591,7 +653,7 @@ async function generateClientFrenchSearchResults(query: string): Promise<{
     }
   }
 
-  // 4. Direct Global Web Search Engine Actions
+  // 6. Direct Global Web Search Engine Actions
   const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
   if (!addedUrls.has(googleSearchUrl)) {
     addedUrls.add(googleSearchUrl);
@@ -628,6 +690,19 @@ async function generateClientFrenchSearchResults(query: string): Promise<{
       source: 'qwant.com',
       breadcrumb: qwantSearchUrl,
       icon: 'https://www.google.com/s2/favicons?domain=qwant.com&sz=64',
+    });
+  }
+
+  const bingSearchUrl = `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
+  if (!addedUrls.has(bingSearchUrl)) {
+    addedUrls.add(bingSearchUrl);
+    results.push({
+      title: `Rechercher « ${query} » sur Bing France`,
+      url: bingSearchUrl,
+      snippet: `Consulter les résultats du moteur de recherche Microsoft Bing pour votre requête.`,
+      source: 'bing.com',
+      breadcrumb: bingSearchUrl,
+      icon: 'https://www.google.com/s2/favicons?domain=bing.com&sz=64',
     });
   }
 

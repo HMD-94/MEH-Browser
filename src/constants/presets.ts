@@ -474,7 +474,7 @@ export const DEFAULT_THEME: ThemeConfig = {
 };
 
 export const DEFAULT_SETTINGS: BrowserSettings = {
-  defaultSearchEngine: 'duckduckgo',
+  defaultSearchEngine: 'google',
   newTabHomepage: 'meh-home',
   customHomepageUrl: '',
   restoreTabsOnStartup: true,

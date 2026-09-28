@@ -50,7 +50,9 @@ import {
   Maximize2,
   Download,
   Eye,
+  ChevronDown,
 } from 'lucide-react';
+import { DEFAULT_SEARCH_ENGINES } from '../constants/presets';
 
 interface BrowserContentProps {
   activeTab: Tab;
@@ -104,6 +106,7 @@ export const BrowserContent: React.FC<BrowserContentProps> = ({
   const [googleApiNotice, setGoogleApiNotice] = useState<string | null>(null);
   const [searchFilter, setSearchFilter] = useState<'all' | 'news' | 'videos' | 'images'>('all');
   const [localSearchInput, setLocalSearchInput] = useState('');
+  const [isEngineMenuOpen, setIsEngineMenuOpen] = useState(false);
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
@@ -385,7 +388,7 @@ export const BrowserContent: React.FC<BrowserContentProps> = ({
                 onSubmit={(e) => {
                   e.preventDefault();
                   if (localSearchInput.trim()) {
-                    onNavigate(`https://duckduckgo.com/?q=${encodeURIComponent(localSearchInput.trim())}`);
+                    onNavigate(`${currentSearchEngine.searchUrl}${encodeURIComponent(localSearchInput.trim())}`);
                   }
                 }}
                 className="flex-1 relative flex items-center h-11 px-4 rounded-full bg-slate-900/90 hover:bg-slate-900 border border-white/20 focus-within:border-sky-400 focus-within:ring-2 focus-within:ring-sky-400/30 transition-all shadow-inner"
@@ -395,7 +398,7 @@ export const BrowserContent: React.FC<BrowserContentProps> = ({
                   value={localSearchInput}
                   onChange={(e) => setLocalSearchInput(e.target.value)}
                   className="w-full bg-transparent text-sm text-white placeholder-slate-400 focus:outline-none font-medium"
-                  placeholder="Rechercher avec DuckDuckGo..."
+                  placeholder={`Rechercher avec ${currentSearchEngine.name}...`}
                 />
 
                 {localSearchInput && (
@@ -421,11 +424,76 @@ export const BrowserContent: React.FC<BrowserContentProps> = ({
               </form>
             </div>
 
-            {/* Right Status Badge */}
-            <div className="flex items-center gap-2.5 shrink-0">
-              <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-500/15 border border-orange-500/30 text-orange-300 text-xs font-semibold">
-                <ShieldCheck className="w-3.5 h-3.5 text-orange-400" />
-                <span>Moteur DuckDuckGo</span>
+            {/* Right Status Badge & Engine Switcher */}
+            <div className="flex items-center gap-2.5 shrink-0 relative">
+              {/* Direct Open Button on official engine */}
+              <a
+                href={`${currentSearchEngine.searchUrl}${encodeURIComponent(searchQuery)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 transition-all hover:scale-105 active:scale-95 shadow-sm"
+                title={`Ouvrir directement la page de recherche officielle sur ${currentSearchEngine.name}`}
+              >
+                <span>Page {currentSearchEngine.name}</span>
+                <ExternalLink className="w-3.5 h-3.5 text-sky-300" />
+              </a>
+
+              {/* Active Engine Badge with interactive Switcher Dropdown */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsEngineMenuOpen(!isEngineMenuOpen)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-md active:scale-95 border border-white/25 hover:brightness-110"
+                  style={{
+                    backgroundColor: `${currentSearchEngine.color}25`,
+                    color: currentSearchEngine.color,
+                  }}
+                  title="Cliquer pour basculer de moteur de recherche"
+                >
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: currentSearchEngine.color }}
+                  />
+                  <span>Moteur {currentSearchEngine.name}</span>
+                  <ChevronDown className="w-3.5 h-3.5 opacity-80" />
+                </button>
+
+                {isEngineMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-52 rounded-2xl liquid-glass border border-white/20 shadow-2xl p-1.5 z-50 text-xs space-y-1 backdrop-blur-2xl">
+                    <div className="px-3 py-1 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                      Moteur actif
+                    </div>
+                    {DEFAULT_SEARCH_ENGINES.map((engine) => (
+                      <button
+                        key={engine.id}
+                        type="button"
+                        onClick={() => {
+                          onSelectSearchEngine(engine);
+                          setIsEngineMenuOpen(false);
+                          if (searchQuery) {
+                            onNavigate(`${engine.searchUrl}${encodeURIComponent(searchQuery)}`);
+                          }
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-all ${
+                          engine.id === currentSearchEngine.id
+                            ? 'bg-white/20 text-white font-bold'
+                            : 'hover:bg-white/10 text-slate-300 hover:text-white'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-2.5 h-2.5 rounded-full"
+                            style={{ backgroundColor: engine.color }}
+                          />
+                          <span>{engine.name}</span>
+                        </div>
+                        {engine.id === currentSearchEngine.id && (
+                          <Check className="w-3.5 h-3.5 text-sky-400" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -958,12 +1026,10 @@ export const BrowserContent: React.FC<BrowserContentProps> = ({
                       <span>Moteur MEH Browser</span>
                     </div>
                     <h3 className="text-lg font-bold text-white text-crisp">
-                      Navigation Privée DuckDuckGo
+                      Navigation avec {currentSearchEngine.name}
                     </h3>
                     <p className="text-slate-200 leading-relaxed font-normal">
-                      Chaque résultat affiché est issu en temps réel du moteur de recherche
-                      DuckDuckGo. Cliquez directement sur un résultat pour l'ouvrir dans la
-                      zone de navigation interne de cet onglet.
+                      Chaque résultat affiché est issu en temps réel de votre moteur de recherche {currentSearchEngine.name}. Cliquez directement sur un résultat pour l'ouvrir dans la zone de navigation interne de cet onglet.
                     </p>
                     <div className="pt-1 flex items-center gap-2 text-slate-400 text-[11px]">
                       <ShieldCheck className="w-4 h-4 text-emerald-400" />

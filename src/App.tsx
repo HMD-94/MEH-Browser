@@ -194,10 +194,31 @@ export default function App() {
     }
   });
 
-  // 9. Search Engine State (Defaults to DuckDuckGo as requested)
+  // 9. Search Engine State
   const [searchEngineId, setSearchEngineId] = useState<string>(
-    settings.defaultSearchEngine || 'duckduckgo'
+    settings.defaultSearchEngine || 'google'
   );
+
+  const handleSelectSearchEngine = useCallback((eng: SearchEngine) => {
+    setSearchEngineId(eng.id);
+    setSettings((prev) => {
+      const updated = { ...prev, defaultSearchEngine: eng.id };
+      try {
+        localStorage.setItem('meh_settings', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  }, []);
+
+  const handleUpdateSettings = useCallback((newSettings: BrowserSettings) => {
+    setSettings(newSettings);
+    if (newSettings.defaultSearchEngine) {
+      setSearchEngineId(newSettings.defaultSearchEngine);
+    }
+    try {
+      localStorage.setItem('meh_settings', JSON.stringify(newSettings));
+    } catch {}
+  }, []);
 
   const currentSearchEngine = useMemo(() => {
     return (
@@ -709,7 +730,7 @@ export default function App() {
         onGoHome={handleGoHome}
         theme={theme}
         currentSearchEngine={currentSearchEngine}
-        onSelectSearchEngine={(eng) => setSearchEngineId(eng.id)}
+        onSelectSearchEngine={handleSelectSearchEngine}
         bookmarks={bookmarks}
         onToggleBookmark={handleToggleBookmark}
         downloads={downloads}
@@ -721,7 +742,7 @@ export default function App() {
         isReaderMode={!!activeTab?.isReaderMode}
         onToggleReaderMode={handleToggleReaderMode}
         settings={settings}
-        onChangeSettings={setSettings}
+        onChangeSettings={handleUpdateSettings}
       />
 
       {/* 3. Optional Bookmarks Bar */}
@@ -743,7 +764,7 @@ export default function App() {
             wallpaper={wallpaper}
             onChangeWallpaper={setWallpaper}
             currentSearchEngine={currentSearchEngine}
-            onSelectSearchEngine={(eng) => setSearchEngineId(eng.id)}
+            onSelectSearchEngine={handleSelectSearchEngine}
             speedDial={speedDial}
             onAddSpeedDial={(item) =>
               setSpeedDial((prev) => [
@@ -762,7 +783,7 @@ export default function App() {
             onToggleBookmark={handleToggleBookmark}
             isBookmarked={bookmarks.some((b) => b.url === activeTab.url)}
             settings={settings}
-            onChangeSettings={setSettings}
+            onChangeSettings={handleUpdateSettings}
           />
         )}
       </main>
