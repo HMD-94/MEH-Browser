@@ -492,5 +492,6 @@ export const DEFAULT_SETTINGS: BrowserSettings = {
   downloadFolder: 'Téléchargements/MEH',
   askDownloadPath: false,
   hardwareAcceleration: true,
+  googleApiKey: 'AIzaSyBdtD8Mv6Q0HI_QSRT1rpmVUg4DZeZ2V44',
   googleSearchEngineId: '6731f777b64524256',
 };

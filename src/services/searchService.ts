@@ -375,7 +375,57 @@ const FRENCH_WEB_DIRECTORY: FrenchWebEntry[] = [
     snippet: 'Discord est l’application idéale pour échanger par message, appel vocal ou vidéo dans des serveurs organisés par thème.',
     icon: 'https://www.google.com/s2/favicons?domain=discord.com&sz=64',
   },
+
+  // AUTOMOBILE & TRANSPORTS
+  {
+    keywords: ['voiture', 'auto', 'vehicule', 'voiture occasion', 'lacentrale', 'achat voiture'],
+    title: 'La Centrale - Première plateforme de voitures d’occasion en France',
+    url: 'https://www.lacentrale.fr',
+    source: 'lacentrale.fr',
+    snippet: 'Consultez des centaines de milliers d’annonces de voitures d’occasion garanties, avec cote auto officielle, historique vérifié et fiches techniques détaillées.',
+    icon: 'https://www.google.com/s2/favicons?domain=lacentrale.fr&sz=64',
+    knowledge: {
+      title: 'Automobile',
+      subtitle: 'Véhicule motorisé à roues destiné au transport',
+      description: 'L’automobile est un véhicule terrestre à roues propulsé par un moteur intégré, conçu pour le transport de personnes et de marchandises.',
+      sourceName: 'Wikipédia',
+      sourceUrl: 'https://fr.wikipedia.org/wiki/Automobile',
+      attributes: [
+        { label: 'Secteur', value: 'Industrie automobile' },
+        { label: 'Propulsion', value: 'Thermique, Électrique, Hybride' },
+      ],
+    },
+  },
+  {
+    keywords: ['autoplus', 'auto plus', 'actus voiture', 'essai auto'],
+    title: 'Auto Plus - Actualité automobile, essais et comparatifs',
+    url: 'https://www.autoplus.fr',
+    source: 'autoplus.fr',
+    snippet: 'Toute l’actualité automobile en direct : essais détaillés des nouveaux modèles, guides d’achat, radars, prix des carburants et conseils d’experts.',
+    icon: 'https://www.google.com/s2/favicons?domain=autoplus.fr&sz=64',
+  },
+  {
+    keywords: ['largus', 'l argus', 'cote argus', 'valeur voiture'],
+    title: 'L’Argus - Cote auto officielle et petites annonces',
+    url: 'https://www.largus.fr',
+    source: 'largus.fr',
+    snippet: 'Estimez la valeur réelle de votre voiture avec la Cote Argus de référence, et parcourez les annonces de véhicules neufs et d’occasion.',
+    icon: 'https://www.google.com/s2/favicons?domain=largus.fr&sz=64',
+  },
+
+  // MANGA & ANIME
+  {
+    keywords: ['manga', 'anime', 'crunchyroll', 'streaming anime', 'scan manga'],
+    title: 'Crunchyroll France - Le plus grand catalogue d’animés en streaming',
+    url: 'https://www.crunchyroll.com/fr/',
+    source: 'crunchyroll.com',
+    snippet: 'Regardez les derniers épisodes de vos animés préférés (One Piece, Jujutsu Kaisen, Demon Slayer) en simulcast légal quelques heures après le Japon.',
+    icon: 'https://www.google.com/s2/favicons?domain=crunchyroll.com&sz=64',
+  },
 ];
+
+export const DEFAULT_GOOGLE_API_KEY = 'AIzaSyBdtD8Mv6Q0HI_QSRT1rpmVUg4DZeZ2V44';
+export const DEFAULT_GOOGLE_CX = '6731f777b64524256';
 
 export interface SearchApiResponse {
   query: string;
@@ -391,9 +441,15 @@ export interface SearchApiResponse {
   count: number;
 }
 
+export interface LiveSearchPayload {
+  results: LiveSearchResult[];
+  instantAnswer?: any;
+  googleApiNotice?: string | null;
+}
+
 // In-memory client caches (TTL: 10 minutes)
 const CACHE_TTL_MS = 10 * 60 * 1000;
-const webSearchCache = new Map<string, { results: LiveSearchResult[]; instantAnswer?: any; ts: number }>();
+const webSearchCache = new Map<string, { results: LiveSearchResult[]; instantAnswer?: any; googleApiNotice?: string | null; ts: number }>();
 const imageSearchCache = new Map<string, { results: LiveImageResult[]; ts: number }>();
 const kgCache = new Map<string, { data: KnowledgeGraphData | null; ts: number }>();
 
@@ -457,7 +513,7 @@ async function generateClientFrenchSearchResults(query: string): Promise<{
   try {
     const wikiUrl = `https://fr.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(
       query
-    )}&utf8=&format=json&origin=*&srlimit=6`;
+    )}&utf8=&format=json&origin=*&srlimit=8`;
     const wRes = await fetch(wikiUrl);
     if (wRes.ok) {
       const wData = await wRes.json();
@@ -488,14 +544,61 @@ async function generateClientFrenchSearchResults(query: string): Promise<{
     console.warn('Wikipedia search fallback warning:', err);
   }
 
-  // 3. Add direct Web Search actions so the user can easily reach any full search engine
+  // 3. Dynamic French Web Portal Actions for the query
+  const queryCapitalized = query.charAt(0).toUpperCase() + query.slice(1);
+  const portals = [
+    {
+      title: `Actualités en direct : « ${query} »`,
+      url: `https://news.google.fr/search?q=${encodeURIComponent(query)}`,
+      snippet: `Consulter les derniers articles de presse et reportages d'actualité concernant ${query} en direct sur Google Actualités France.`,
+      source: 'news.google.fr',
+      icon: 'https://www.google.com/s2/favicons?domain=news.google.fr&sz=64',
+    },
+    {
+      title: `Vidéos et reportages : « ${query} »`,
+      url: `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`,
+      snippet: `Regarder les vidéos, tutoriels, analyses et émissions consacrées à ${query} sur YouTube France.`,
+      source: 'youtube.com',
+      icon: 'https://www.google.com/s2/favicons?domain=youtube.com&sz=64',
+    },
+    {
+      title: `Définitions et explications : « ${queryCapitalized} »`,
+      url: `https://fr.wiktionary.org/wiki/${encodeURIComponent(cleanQ)}`,
+      snippet: `Consulter l'étymologie, les définitions lexicales et les synonymes complets de ${query} sur le Wiktionnaire francophone.`,
+      source: 'fr.wiktionary.org',
+      icon: 'https://www.google.com/s2/favicons?domain=wiktionary.org&sz=64',
+    },
+    {
+      title: `Petites annonces et offres pour « ${query} »`,
+      url: `https://www.leboncoin.fr/recherche?text=${encodeURIComponent(query)}`,
+      snippet: `Trouver des annonces de particuliers et professionnels liées à ${query} sur le site numéro 1 en France Leboncoin.`,
+      source: 'leboncoin.fr',
+      icon: 'https://www.google.com/s2/favicons?domain=leboncoin.fr&sz=64',
+    },
+  ];
+
+  for (const portal of portals) {
+    if (!addedUrls.has(portal.url)) {
+      addedUrls.add(portal.url);
+      results.push({
+        title: portal.title,
+        url: portal.url,
+        snippet: portal.snippet,
+        source: portal.source,
+        breadcrumb: portal.url,
+        icon: portal.icon,
+      });
+    }
+  }
+
+  // 4. Direct Global Web Search Engine Actions
   const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
   if (!addedUrls.has(googleSearchUrl)) {
     addedUrls.add(googleSearchUrl);
     results.push({
-      title: `Résultats Google pour « ${query} »`,
+      title: `Recherche web Google complète pour « ${query} »`,
       url: googleSearchUrl,
-      snippet: `Afficher l’ensemble des résultats de recherche web sur Google France pour votre requête « ${query} ».`,
+      snippet: `Ouvrir directement la page de recherche Google France avec l'ensemble des résultats web mondiaux.`,
       source: 'google.fr',
       breadcrumb: googleSearchUrl,
       icon: 'https://www.google.com/s2/favicons?domain=google.fr&sz=64',
@@ -506,9 +609,9 @@ async function generateClientFrenchSearchResults(query: string): Promise<{
   if (!addedUrls.has(ddgSearchUrl)) {
     addedUrls.add(ddgSearchUrl);
     results.push({
-      title: `Recherche web sécurisée DuckDuckGo pour « ${query} »`,
+      title: `Recherche web confidentielle DuckDuckGo pour « ${query} »`,
       url: ddgSearchUrl,
-      snippet: `Consulter les résultats complets du web mondial avec protection intégrale de la vie privée sur DuckDuckGo.`,
+      snippet: `Résultats du web mondial sans aucun traçage ni pistage publicitaire sur DuckDuckGo.`,
       source: 'duckduckgo.com',
       breadcrumb: ddgSearchUrl,
       icon: 'https://www.google.com/s2/favicons?domain=duckduckgo.com&sz=64',
@@ -536,37 +639,51 @@ export async function fetchLiveSearchPayload(
   query: string,
   googleApiKey?: string,
   googleSearchEngineId?: string
-): Promise<{ results: LiveSearchResult[]; instantAnswer?: any }> {
+): Promise<LiveSearchPayload> {
   const cleanQuery = query.trim();
   if (!cleanQuery) return { results: [] };
 
-  const cacheKey = `${cleanQuery.toLowerCase()}_${googleApiKey || ''}`;
+  const activeKey = (googleApiKey || DEFAULT_GOOGLE_API_KEY).trim();
+  const activeCx = (googleSearchEngineId || DEFAULT_GOOGLE_CX).trim();
+
+  const cacheKey = `${cleanQuery.toLowerCase()}_${activeKey}`;
   const cached = webSearchCache.get(cacheKey);
   if (cached && Date.now() - cached.ts < CACHE_TTL_MS) {
-    return { results: cached.results, instantAnswer: cached.instantAnswer };
+    return { results: cached.results, instantAnswer: cached.instantAnswer, googleApiNotice: cached.googleApiNotice };
   }
 
-  // 1. If user explicitly provided Google Custom Search API key & CX
-  if (googleApiKey && googleSearchEngineId) {
+  let googleApiNotice: string | null = null;
+
+  // 1. Google Custom Search JSON API
+  if (activeKey && activeCx) {
     try {
       const googleApiUrl = `https://www.googleapis.com/customsearch/v1?key=${encodeURIComponent(
-        googleApiKey
-      )}&cx=${encodeURIComponent(googleSearchEngineId)}&q=${encodeURIComponent(cleanQuery)}&lr=lang_fr`;
+        activeKey
+      )}&cx=${encodeURIComponent(activeCx)}&q=${encodeURIComponent(cleanQuery)}&hl=fr&gl=fr`;
 
       const gResponse = await fetch(googleApiUrl);
       if (gResponse.ok) {
         const gData = await gResponse.json();
-        if (gData.items && Array.isArray(gData.items)) {
+        if (gData.items && Array.isArray(gData.items) && gData.items.length > 0) {
           const results = gData.items.map((item: any) => ({
             title: item.title,
             url: item.link,
             snippet: item.snippet,
             source: item.displayLink || 'Google',
             breadcrumb: item.formattedUrl || item.link,
-            icon: item.pagemap?.cse_image?.[0]?.src,
+            icon:
+              item.pagemap?.cse_thumbnail?.[0]?.src ||
+              item.pagemap?.cse_image?.[0]?.src ||
+              `https://www.google.com/s2/favicons?domain=${item.displayLink || 'google.fr'}&sz=64`,
           }));
           webSearchCache.set(cacheKey, { results, ts: Date.now() });
           return { results };
+        }
+      } else {
+        const errJson = await gResponse.json().catch(() => null);
+        if (errJson?.error?.code === 403) {
+          googleApiNotice =
+            "Votre clé d'API Google est configurée. N'oubliez pas d'activer l'API « Custom Search JSON API » dans votre console Google Cloud pour bénéficier des résultats Google illimités en direct.";
         }
       }
     } catch (err) {
@@ -593,24 +710,24 @@ export async function fetchLiveSearchPayload(
           webSearchCache.set(cacheKey, {
             results: mappedResults,
             instantAnswer: data.instantAnswer,
+            googleApiNotice,
             ts: Date.now(),
           });
-          return { results: mappedResults, instantAnswer: data.instantAnswer };
+          return { results: mappedResults, instantAnswer: data.instantAnswer, googleApiNotice };
         }
       }
     }
-  } catch (err) {
-    // Expected on static hosting like GitHub Pages where /api/search returns 404
-  }
+  } catch (err) {}
 
   // 3. Robust French Client Fallback (Active on GitHub Pages / Static Hosting)
   const clientData = await generateClientFrenchSearchResults(cleanQuery);
   webSearchCache.set(cacheKey, {
     results: clientData.results,
     instantAnswer: clientData.instantAnswer,
+    googleApiNotice,
     ts: Date.now(),
   });
-  return clientData;
+  return { results: clientData.results, instantAnswer: clientData.instantAnswer, googleApiNotice };
 }
 
 // Fetch real search results

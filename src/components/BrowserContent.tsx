@@ -101,6 +101,7 @@ export const BrowserContent: React.FC<BrowserContentProps> = ({
   const [liveResults, setLiveResults] = useState<LiveSearchResult[]>([]);
   const [knowledgeGraph, setKnowledgeGraph] = useState<KnowledgeGraphData | null>(null);
   const [isSearchingLive, setIsSearchingLive] = useState(false);
+  const [googleApiNotice, setGoogleApiNotice] = useState<string | null>(null);
   const [searchFilter, setSearchFilter] = useState<'all' | 'news' | 'videos' | 'images'>('all');
   const [localSearchInput, setLocalSearchInput] = useState('');
   const [contextMenu, setContextMenu] = useState<{
@@ -218,6 +219,7 @@ export const BrowserContent: React.FC<BrowserContentProps> = ({
       )
         .then((payload) => {
           setLiveResults(payload.results);
+          setGoogleApiNotice(payload.googleApiNotice || null);
           setIsSearchingLive(false);
 
           fetchKnowledgeGraph(searchQuery, payload.instantAnswer)
@@ -745,9 +747,29 @@ export const BrowserContent: React.FC<BrowserContentProps> = ({
               )}
 
               {/* RESULTS LIST */}
-              {!isSearchingLive && liveResults.length > 0 && (
-                <div className="space-y-4">
-                  {liveResults.map((result, idx) => {
+              {!isSearchingLive && (
+                <>
+                  {googleApiNotice && (
+                    <div className="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg mb-4">
+                      <div className="flex items-center gap-2.5">
+                        <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+                        <span>{googleApiNotice}</span>
+                      </div>
+                      <a
+                        href="https://console.cloud.google.com/apis/library/customsearch.googleapis.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3.5 py-1.5 rounded-xl bg-amber-500/25 hover:bg-amber-500/40 text-amber-100 font-bold border border-amber-400/40 shrink-0 transition-colors inline-flex items-center gap-1.5 self-start sm:self-auto text-xs"
+                      >
+                        <span>Activer en 1 clic</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  )}
+
+                  {liveResults.length > 0 && (
+                    <div className="space-y-4">
+                      {liveResults.map((result, idx) => {
                     let domain = result.source || '';
                     try {
                       domain = new URL(result.url).hostname;
@@ -855,7 +877,9 @@ export const BrowserContent: React.FC<BrowserContentProps> = ({
                   })}
                 </div>
               )}
-            </div>
+            </>
+          )}
+        </div>
 
             {/* ===================== RIGHT COLUMN: INSTANT ANSWER / KNOWLEDGE (30-35%) ===================== */}
             <div className="lg:col-span-5 xl:col-span-4">

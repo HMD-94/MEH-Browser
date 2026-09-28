@@ -80,6 +80,9 @@ export default function App() {
       const saved = localStorage.getItem('meh_settings');
       if (saved) {
         const parsed = JSON.parse(saved);
+        if (!parsed.googleApiKey) {
+          parsed.googleApiKey = 'AIzaSyBdtD8Mv6Q0HI_QSRT1rpmVUg4DZeZ2V44';
+        }
         if (!parsed.googleSearchEngineId) {
           parsed.googleSearchEngineId = '6731f777b64524256';
         }

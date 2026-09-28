@@ -309,14 +309,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       </label>
                       <input
                         type="text"
-                        value={settings.googleApiKey || ''}
+                        value={settings.googleApiKey ?? 'AIzaSyBdtD8Mv6Q0HI_QSRT1rpmVUg4DZeZ2V44'}
                         onChange={(e) =>
                           onChangeSettings({
                             ...settings,
                             googleApiKey: e.target.value.trim(),
                           })
                         }
-                        placeholder="ex: AIzaSyD..."
+                        placeholder="AIzaSyBdtD8Mv6Q0HI_QSRT1rpmVUg4DZeZ2V44"
                         className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/20 text-white placeholder-slate-500 font-mono text-xs focus:outline-none focus:border-sky-400"
                       />
                     </div>
@@ -327,14 +327,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       </label>
                       <input
                         type="text"
-                        value={settings.googleSearchEngineId || ''}
+                        value={settings.googleSearchEngineId ?? '6731f777b64524256'}
                         onChange={(e) =>
                           onChangeSettings({
                             ...settings,
                             googleSearchEngineId: e.target.value.trim(),
                           })
                         }
-                        placeholder="ex: a1b2c3d4e5f6g7h8..."
+                        placeholder="6731f777b64524256"
                         className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/20 text-white placeholder-slate-500 font-mono text-xs focus:outline-none focus:border-sky-400"
                       />
                     </div>
