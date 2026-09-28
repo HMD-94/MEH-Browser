@@ -30,7 +30,9 @@ import {
   ShieldAlert,
   ChevronDown,
   RotateCcw,
+  AppWindow,
 } from 'lucide-react';
+import { usePWAInstall } from '../hooks/usePWAInstall';
 
 interface BrowserHeaderProps {
   tabs: Tab[];
@@ -92,6 +94,7 @@ export const BrowserHeader: React.FC<BrowserHeaderProps> = ({
   onChangeSettings,
 }) => {
   const activeTab = tabs.find((t) => t.id === activeTabId) || tabs[0];
+  const { isInstalled, install } = usePWAInstall();
   const [urlInput, setUrlInput] = useState(activeTab?.url || 'meh://newtab');
   const [isEngineMenuOpen, setIsEngineMenuOpen] = useState(false);
   const [isShieldMenuOpen, setIsShieldMenuOpen] = useState(false);
@@ -545,6 +548,18 @@ export const BrowserHeader: React.FC<BrowserHeaderProps> = ({
           >
             <Palette className="w-4 h-4" />
           </button>
+
+          {/* Install as App button */}
+          {!isInstalled && (
+            <button
+              onClick={install}
+              className="p-1.5 rounded-xl hover:bg-white/15 text-cyan-300 bg-cyan-500/15 border border-cyan-400/30 transition-all shadow-sm flex items-center gap-1.5 text-xs font-semibold hover:border-cyan-400/60"
+              title="Installer MEH Browser en tant qu'application autonome sur votre PC ou mobile"
+            >
+              <AppWindow className="w-4 h-4 text-cyan-400" />
+              <span className="hidden xl:inline text-[11px] text-cyan-200">Installer</span>
+            </button>
+          )}
 
           {/* Fullscreen */}
           <button

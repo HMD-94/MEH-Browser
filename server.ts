@@ -23,6 +23,7 @@ const HTML_CACHE_TTL = 60 * 1000; // 1 minute
 app.use('/wallpapers', express.static(path.resolve(__dirname, 'public/wallpapers'), { maxAge: '7d' }));
 app.use('/public', express.static(path.resolve(__dirname, 'public'), { maxAge: '7d' }));
 app.use('/src/assets/images', express.static(path.resolve(__dirname, 'src/assets/images'), { maxAge: '7d' }));
+app.use(express.static(path.resolve(__dirname, 'public'), { maxAge: '1d' }));
 
 // In-memory server cache (TTL: 10 minutes)
 const serverCache = new Map<string, { data: any; ts: number }>();
