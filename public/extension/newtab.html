@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nouvel Onglet — MEH Browser</title>
+  <link rel="icon" type="image/png" href="icons/icon-48.png">
+  <link rel="stylesheet" href="newtab.css">
+</head>
+<body class="theme-liquid-glass">
+  <!-- Dynamic Background with Overlay -->
+  <div id="bgContainer" class="bg-container">
+    <div class="bg-overlay"></div>
+    <div class="caustic-glow"></div>
+  </div>
+
+  <div class="app-layout">
+    <!-- Top Navigation Bar -->
+    <header class="top-nav">
+      <div class="brand">
+        <img src="icons/icon-48.png" alt="MEH Logo" class="brand-logo">
+        <span class="brand-title">MEH <span class="brand-sub">Browser</span></span>
+      </div>
+
+      <div class="top-actions">
+        <!-- Weather pill -->
+        <div id="weatherPill" class="glass-pill clickable" title="Météo en direct">
+          <span id="weatherIcon">⛅</span>
+          <span id="weatherTemp">--°C</span>
+          <span id="weatherCity" class="weather-city">Paris</span>
+        </div>
+
+        <!-- Customize button -->
+        <button id="btnCustomize" class="glass-btn icon-btn" title="Changer le fond d'écran et le style">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.563-2.512 5.563-5.563C22 6.5 17.5 2 12 2z"/></svg>
+        </button>
+
+        <!-- Widgets button -->
+        <button id="btnToggleWidgets" class="glass-btn icon-btn" title="Afficher les widgets (Notes, Focus, Météo)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        </button>
+
+        <!-- Settings button -->
+        <button id="btnSettings" class="glass-btn icon-btn" title="Paramètres">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Time & Greeting -->
+      <section class="hero-section">
+        <div id="clockDisplay" class="clock-display">12:00:00</div>
+        <div class="greeting-row">
+          <span id="greetingText" class="greeting-text">Bonjour</span>
+          <span class="greeting-dot">•</span>
+          <span id="dateDisplay" class="date-display">Dimanche 25 octobre</span>
+        </div>
+      </section>
+
+      <!-- Search Section -->
+      <section class="search-section">
+        <form id="searchForm" class="search-bar-glass" autocomplete="off">
+          <!-- Search Engine Switcher -->
+          <div class="engine-dropdown-wrap">
+            <button type="button" id="btnEngineSelect" class="engine-btn" title="Changer de moteur">
+              <span id="engineBadge" class="engine-badge google">G</span>
+              <span id="engineLabel" class="engine-label">Google</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div id="engineMenu" class="engine-menu hidden">
+              <div class="menu-item" data-engine="google">
+                <span class="engine-badge google">G</span>
+                <span>Google</span>
+              </div>
+              <div class="menu-item" data-engine="duckduckgo">
+                <span class="engine-badge ddg">🦆</span>
+                <span>DuckDuckGo</span>
+              </div>
+              <div class="menu-item" data-engine="qwant">
+                <span class="engine-badge qwant">Q</span>
+                <span>Qwant</span>
+              </div>
+              <div class="menu-item" data-engine="bing">
+                <span class="engine-badge bing">b</span>
+                <span>Bing</span>
+              </div>
+              <div class="menu-item" data-engine="ecosia">
+                <span class="engine-badge ecosia">🌱</span>
+                <span>Ecosia</span>
+              </div>
+              <div class="menu-item" data-engine="youtube">
+                <span class="engine-badge yt">▶</span>
+                <span>YouTube</span>
+              </div>
+              <div class="menu-item" data-engine="wikipedia">
+                <span class="engine-badge wiki">W</span>
+                <span>Wikipédia</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Search Input -->
+          <input
+            type="text"
+            id="searchInput"
+            class="search-input"
+            placeholder="Rechercher sur le web ou entrer une adresse URL..."
+            autofocus
+          >
+
+          <!-- Voice & Clear Buttons -->
+          <button type="button" id="btnClearSearch" class="search-action-btn hidden" title="Effacer">✕</button>
+          <button type="button" id="btnVoiceSearch" class="search-action-btn" title="Recherche vocale">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+          </button>
+          <button type="submit" class="search-submit-btn" title="Lancer la recherche">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </button>
+
+          <!-- Autocomplete Dropdown -->
+          <div id="suggestionsList" class="suggestions-dropdown hidden"></div>
+        </form>
+      </section>
+
+      <!-- Speed Dial Shortcuts Grid -->
+      <section class="speed-dial-section">
+        <div id="speedDialGrid" class="speed-dial-grid">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+      <!-- Glass Widgets Dock (Collapsible) -->
+      <section id="widgetsDock" class="widgets-dock">
+        <!-- Quick Notes Widget -->
+        <div class="widget-card">
+          <div class="widget-header">
+            <span class="widget-title">📝 Bloc-Notes Rapide</span>
+            <span id="noteSavedBadge" class="widget-badge hidden">Enregistré</span>
+          </div>
+          <textarea id="quickNoteInput" class="widget-textarea" placeholder="Notez une idée, un numéro, un lien rapide..."></textarea>
+        </div>
+
+        <!-- Focus / Pomodoro Widget -->
+        <div class="widget-card">
+          <div class="widget-header">
+            <span class="widget-title">⏱️ Minuteur Focus</span>
+            <span id="pomoStatus" class="widget-badge">Session 25m</span>
+          </div>
+          <div class="pomo-display">
+            <div id="pomoTime" class="pomo-time">25:00</div>
+            <div class="pomo-controls">
+              <button id="pomoBtnStart" class="glass-pill active-pill">Démarrer</button>
+              <button id="pomoBtnReset" class="glass-pill">Réinitialiser</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Daily Quote Widget -->
+        <div class="widget-card">
+          <div class="widget-header">
+            <span class="widget-title">💡 Inspiration</span>
+          </div>
+          <div class="quote-content">
+            <p id="quoteText" class="quote-text">« La simplicité est la sophistication suprême. »</p>
+            <span id="quoteAuthor" class="quote-author">— Léonard de Vinci</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bottom-bar">
+      <div class="footer-left">
+        <span class="footer-badge">Liquid Glass Engine</span>
+        <span class="footer-info">MEH Browser pour Chrome</span>
+      </div>
+      <div class="footer-right">
+        <button id="btnQuickWallpaper" class="glass-link">Fond aléatoire</button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Modal: Wallpaper Customizer -->
+  <div id="modalCustomize" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🎨 Fonds d'écran & Apparence</h3>
+        <button class="modal-close" data-close="modalCustomize">✕</button>
+      </div>
+      <div class="modal-body">
+        <label class="form-label">Fonds d'écran 4K officiels MEH :</label>
+        <div class="wallpaper-presets-grid">
+          <div class="wp-card active" data-wp="liquid-glass">
+            <div class="wp-preview wp-liquid"></div>
+            <span>Liquid Glass</span>
+          </div>
+          <div class="wp-card" data-wp="aurora-drift">
+            <div class="wp-preview wp-aurora"></div>
+            <span>Aurora Drift</span>
+          </div>
+          <div class="wp-card" data-wp="sunset-prism">
+            <div class="wp-preview wp-sunset"></div>
+            <span>Sunset Prism</span>
+          </div>
+          <div class="wp-card" data-wp="deep-cosmos">
+            <div class="wp-preview wp-cosmos"></div>
+            <span>Deep Cosmos</span>
+          </div>
+          <div class="wp-card" data-wp="cyberpunk">
+            <div class="wp-preview wp-cyber"></div>
+            <span>Cyberpunk Neon</span>
+          </div>
+          <div class="wp-card" data-wp="obsidian">
+            <div class="wp-preview wp-obsidian"></div>
+            <span>Obsidian Dark</span>
+          </div>
+        </div>
+
+        <div class="form-group mt-4">
+          <label class="form-label">Ou URL personnalisée de votre image :</label>
+          <div class="input-with-btn">
+            <input type="url" id="customWpUrl" placeholder="https://images.unsplash.com/..." class="glass-input">
+            <button id="btnApplyCustomWp" class="glass-pill active-pill">Appliquer</button>
+          </div>
+        </div>
+
+        <div class="form-group mt-4">
+          <label class="form-label">Flou d'arrière-plan Liquid Glass : <span id="blurVal">24px</span></label>
+          <input type="range" id="blurSlider" min="0" max="40" value="24" class="glass-range">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Add Shortcut -->
+  <div id="modalAddShortcut" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>⚡ Ajouter un raccourci</h3>
+        <button class="modal-close" data-close="modalAddShortcut">✕</button>
+      </div>
+      <form id="formAddShortcut" class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Nom du site :</label>
+          <input type="text" id="shortcutTitle" required placeholder="ex: Reddit, Netflix, GitHub..." class="glass-input">
+        </div>
+        <div class="form-group mt-3">
+          <label class="form-label">Adresse web (URL) :</label>
+          <input type="text" id="shortcutUrl" required placeholder="https://..." class="glass-input">
+        </div>
+        <div class="modal-footer mt-4">
+          <button type="button" class="glass-btn" data-close="modalAddShortcut">Annuler</button>
+          <button type="submit" class="glass-pill active-pill">Ajouter au Speed Dial</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="newtab.js"></script>
+</body>
+</html>

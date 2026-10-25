@@ -31,7 +31,9 @@ import {
   Filter,
   CheckCircle2,
   Trash2,
+  Puzzle,
 } from 'lucide-react';
+import JSZip from 'jszip';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -68,6 +70,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     | 'privacy'
     | 'downloads'
     | 'shortcuts'
+    | 'extension'
     | 'advanced'
   >('appearance');
 
@@ -131,6 +134,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               { id: 'privacy', label: 'Confidentialité', icon: Shield },
               { id: 'downloads', label: 'Téléchargements', icon: Download },
               { id: 'shortcuts', label: 'Raccourcis clavier', icon: Keyboard },
+              { id: 'extension', label: 'Extension Chrome', icon: Puzzle },
               { id: 'advanced', label: 'Avancé', icon: Sliders },
             ].map((cat) => {
               const Icon = cat.icon;
@@ -772,6 +776,103 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       </kbd>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* CATEGORY: EXTENSION CHROME */}
+            {activeCategory === 'extension' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                    <Puzzle className="w-4 h-4 text-sky-400" />
+                    <span>Extension Chrome Officielle MEH Browser</span>
+                  </h3>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-sky-500/20 text-sky-300 border border-sky-400/30 uppercase tracking-wider">
+                    Manifest V3
+                  </span>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-gradient-to-r from-sky-950/60 to-purple-950/60 border border-white/15 space-y-3">
+                  <p className="text-xs text-white/90 leading-relaxed">
+                    Transformez Google Chrome (ou Brave, Edge, Opera) pour afficher directement l'interface Liquid Glass officielle de MEH Browser à chaque nouvel onglet !
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
+                    <button
+                      onClick={async () => {
+                        try {
+                          const zip = new JSZip();
+                          const files = [
+                            'manifest.json',
+                            'background.js',
+                            'newtab.html',
+                            'newtab.css',
+                            'newtab.js',
+                            'popup.html',
+                            'popup.css',
+                            'popup.js',
+                            'README.md',
+                          ];
+                          for (const f of files) {
+                            try {
+                              const r = await fetch(`/extension/${f}`);
+                              if (r.ok) zip.file(f, await r.text());
+                            } catch {}
+                          }
+                          const icons = zip.folder('icons');
+                          for (const s of ['16', '48', '128']) {
+                            try {
+                              const ir = await fetch(`/extension/icons/icon-${s}.png`);
+                              if (ir.ok) icons?.file(`icon-${s}.png`, await ir.blob());
+                            } catch {}
+                          }
+                          const blob = await zip.generateAsync({ type: 'blob' });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = 'meh-browser-chrome-extension.zip';
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                          URL.revokeObjectURL(url);
+                        } catch (e) {
+                          console.error(e);
+                        }
+                      }}
+                      className="px-4 py-2 rounded-xl text-xs font-bold text-slate-950 shadow-lg flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+                      style={{ backgroundColor: theme.primaryColor }}
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Télécharger le pack Extension (.zip)</span>
+                    </button>
+
+                    <a
+                      href="/extension/newtab.html"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3.5 py-2 rounded-xl text-xs font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/15 transition-all flex items-center gap-1.5"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5 text-sky-300" />
+                      <span>Tester le Nouvel Onglet</span>
+                    </a>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-3">
+                  <h4 className="text-xs font-bold text-white uppercase tracking-wider">
+                    Installation en 3 étapes dans Google Chrome :
+                  </h4>
+                  <ol className="list-decimal list-inside space-y-2 text-xs text-white/80">
+                    <li>
+                      <b className="text-white">Décompressez</b> le fichier ZIP téléchargé sur votre ordinateur.
+                    </li>
+                    <li>
+                      Ouvrez Chrome et accédez à <code className="px-1.5 py-0.5 rounded bg-black/40 border border-white/20 font-mono text-sky-300">chrome://extensions</code>
+                    </li>
+                    <li>
+                      Activez le <b className="text-white">« Mode développeur »</b> en haut à droite, puis cliquez sur <b className="text-white">« Charger l'extension non empaquetée »</b> et sélectionnez le dossier décompressé.
+                    </li>
+                  </ol>
                 </div>
               </div>
             )}

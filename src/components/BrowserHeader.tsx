@@ -31,6 +31,7 @@ import {
   ChevronDown,
   RotateCcw,
   AppWindow,
+  Puzzle,
 } from 'lucide-react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 
@@ -58,6 +59,7 @@ interface BrowserHeaderProps {
   onToggleHistory: () => void;
   onToggleBookmarks: () => void;
   onToggleDownloads: () => void;
+  onToggleChromeExtension?: () => void;
   isReaderMode: boolean;
   onToggleReaderMode: () => void;
   settings?: BrowserSettings;
@@ -88,6 +90,7 @@ export const BrowserHeader: React.FC<BrowserHeaderProps> = ({
   onToggleHistory,
   onToggleBookmarks,
   onToggleDownloads,
+  onToggleChromeExtension,
   isReaderMode,
   onToggleReaderMode,
   settings,
@@ -548,6 +551,18 @@ export const BrowserHeader: React.FC<BrowserHeaderProps> = ({
           >
             <Palette className="w-4 h-4" />
           </button>
+
+          {/* Chrome Extension Button */}
+          {onToggleChromeExtension && (
+            <button
+              onClick={onToggleChromeExtension}
+              className="p-1.5 rounded-xl hover:bg-white/15 text-indigo-300 bg-indigo-500/15 border border-indigo-400/30 transition-all shadow-sm flex items-center gap-1.5 text-xs font-semibold hover:border-indigo-400/60"
+              title="Extension Chrome : Rendre Chrome exactement identique à MEH Browser"
+            >
+              <Puzzle className="w-4 h-4 text-indigo-300" />
+              <span className="hidden lg:inline text-[11px] text-indigo-200">Ext. Chrome</span>
+            </button>
+          )}
 
           {/* Install as App button */}
           {!isInstalled && (

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEH Browser Hub</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-wrap">
+    <!-- Header -->
+    <div class="popup-header">
+      <div class="brand">
+        <img src="icons/icon-48.png" alt="MEH" class="brand-icon">
+        <span class="brand-text">MEH <span class="brand-light">Browser</span></span>
+      </div>
+      <button id="btnOpenNewTab" class="action-btn" title="Ouvrir le Nouvel Onglet">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+      </button>
+    </div>
+
+    <!-- Quick Search -->
+    <form id="popupSearchForm" class="popup-search">
+      <input type="text" id="popupSearchInput" placeholder="Recherche rapide Google / MEH..." autofocus>
+      <button type="submit" class="popup-search-btn">🔍</button>
+    </form>
+
+    <!-- Engine Pills -->
+    <div class="engine-pills">
+      <button type="button" class="engine-pill active" data-engine="google">Google</button>
+      <button type="button" class="engine-pill" data-engine="duckduckgo">DDG</button>
+      <button type="button" class="engine-pill" data-engine="qwant">Qwant</button>
+      <button type="button" class="engine-pill" data-engine="bing">Bing</button>
+    </div>
+
+    <!-- Quick Shortcuts Grid -->
+    <div class="quick-links">
+      <a href="https://www.youtube.com" target="_blank" class="quick-link-item">
+        <span class="quick-link-icon">▶</span>
+        <span>YouTube</span>
+      </a>
+      <a href="https://mail.google.com" target="_blank" class="quick-link-item">
+        <span class="quick-link-icon">✉</span>
+        <span>Gmail</span>
+      </a>
+      <a href="https://discord.com" target="_blank" class="quick-link-item">
+        <span class="quick-link-icon">💬</span>
+        <span>Discord</span>
+      </a>
+      <a href="https://www.leboncoin.fr" target="_blank" class="quick-link-item">
+        <span class="quick-link-icon">🛍</span>
+        <span>Leboncoin</span>
+      </a>
+    </div>
+
+    <!-- Mini Note Scratchpad -->
+    <div class="mini-note-box">
+      <div class="mini-note-header">
+        <span>📝 Mémo express</span>
+        <span id="popupNoteStatus" class="note-status">Auto-sauvegardé</span>
+      </div>
+      <textarea id="popupNote" placeholder="Une note rapide ou un lien à garder sous le coude..."></textarea>
+    </div>
+
+    <!-- Footer -->
+    <div class="popup-footer">
+      <span class="badge-status">● Liquid Glass Actif</span>
+      <a href="https://hmd-94.github.io/MEH-Bowser/" target="_blank" class="footer-link">Version Web ↗</a>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

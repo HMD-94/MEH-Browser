@@ -35,6 +35,7 @@ import { BookmarksManager } from './components/BookmarksManager';
 import { HistoryDrawer } from './components/HistoryDrawer';
 import { DownloadsDrawer } from './components/DownloadsDrawer';
 import { MobileNavBar } from './components/MobileNavBar';
+import { ChromeExtensionModal } from './components/ChromeExtensionModal';
 
 function safeSetItem(key: string, value: string) {
   try {
@@ -233,6 +234,7 @@ export default function App() {
   const [isBookmarksOpen, setIsBookmarksOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isDownloadsOpen, setIsDownloadsOpen] = useState(false);
+  const [isChromeExtensionOpen, setIsChromeExtensionOpen] = useState(false);
   const [isMobileTabsOpen, setIsMobileTabsOpen] = useState(false);
 
   // 11. Mouse Position for Liquid Glass caustics (zero React re-renders)
@@ -739,6 +741,7 @@ export default function App() {
         onToggleHistory={() => setIsHistoryOpen(true)}
         onToggleBookmarks={() => setIsBookmarksOpen(true)}
         onToggleDownloads={() => setIsDownloadsOpen(true)}
+        onToggleChromeExtension={() => setIsChromeExtensionOpen(true)}
         isReaderMode={!!activeTab?.isReaderMode}
         onToggleReaderMode={handleToggleReaderMode}
         settings={settings}
@@ -870,6 +873,13 @@ export default function App() {
         onClose={() => setIsDownloadsOpen(false)}
         downloads={downloads}
         onClearDownloads={() => setDownloads([])}
+        theme={theme}
+      />
+
+      {/* 11. Chrome Extension Modal */}
+      <ChromeExtensionModal
+        isOpen={isChromeExtensionOpen}
+        onClose={() => setIsChromeExtensionOpen(false)}
         theme={theme}
       />
 
