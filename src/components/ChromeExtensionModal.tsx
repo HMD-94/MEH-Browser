@@ -22,6 +22,8 @@ interface ChromeExtensionModalProps {
   theme: ThemeConfig;
 }
 
+import { downloadExtensionBundleZip } from '../utils/extensionBundle';
+
 export const ChromeExtensionModal: React.FC<ChromeExtensionModalProps> = ({
   isOpen,
   onClose,
@@ -42,62 +44,7 @@ export const ChromeExtensionModal: React.FC<ChromeExtensionModalProps> = ({
   const handleDownloadZip = async () => {
     try {
       setIsDownloading(true);
-      const zip = new JSZip();
-
-      // List of files to fetch and include in the zip
-      const filesToFetch = [
-        'manifest.json',
-        'background.js',
-        'newtab.html',
-        'newtab.css',
-        'newtab.js',
-        'popup.html',
-        'popup.css',
-        'popup.js',
-        'README.md',
-      ];
-
-      // Fetch textual assets from /extension/
-      for (const file of filesToFetch) {
-        try {
-          const res = await fetch(`/extension/${file}`);
-          if (res.ok) {
-            const text = await res.text();
-            zip.file(file, text);
-          }
-        } catch (e) {
-          console.warn(`Could not fetch /extension/${file}, continuing...`, e);
-        }
-      }
-
-      // Fetch icons
-      const iconsFolder = zip.folder('icons');
-      const iconSizes = ['16', '48', '128'];
-      for (const size of iconSizes) {
-        try {
-          const iconRes = await fetch(`/extension/icons/icon-${size}.png`);
-          if (iconRes.ok) {
-            const blob = await iconRes.blob();
-            iconsFolder?.file(`icon-${size}.png`, blob);
-          }
-        } catch (e) {
-          console.warn(`Could not fetch icon-${size}.png`, e);
-        }
-      }
-
-      // Generate the ZIP blob
-      const content = await zip.generateAsync({ type: 'blob' });
-      const downloadUrl = URL.createObjectURL(content);
-
-      // Trigger browser download
-      const a = document.createElement('a');
-      a.href = downloadUrl;
-      a.download = 'meh-browser-chrome-extension.zip';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(downloadUrl);
-
+      await downloadExtensionBundleZip();
       setIsDownloading(false);
       setDownloadSuccess(true);
     } catch (err) {
@@ -285,6 +232,19 @@ export const ChromeExtensionModal: React.FC<ChromeExtensionModalProps> = ({
               </div>
               <p className="text-slate-300 text-[11px] leading-relaxed">
                 Activez l'interrupteur <b>« Mode développeur »</b> en haut à droite, puis cliquez sur <b>« Charger l'extension non empaquetée »</b> et sélectionnez le dossier extrait.
+              </p>
+            </div>
+          </div>
+
+          {/* Windows extraction tip alert */}
+          <div className="p-3.5 rounded-xl bg-amber-500/15 border border-amber-400/30 text-xs text-amber-200 flex items-start gap-2.5">
+            <span className="text-base shrink-0">💡</span>
+            <div className="space-y-1">
+              <span className="font-bold text-amber-300">
+                Astuce importante pour Windows :
+              </span>
+              <p className="text-[11px] text-amber-100/90 leading-relaxed">
+                Veillez à sélectionner le dossier qui contient <b>directement</b> le fichier <code className="px-1 py-0.5 rounded bg-black/40 text-sky-300 font-mono">manifest.json</code>. Si Windows a créé deux dossiers imbriqués du même nom lors de l'extraction, ouvrez le premier et sélectionnez le dossier intérieur contenant les fichiers.
               </p>
             </div>
           </div>

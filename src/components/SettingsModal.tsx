@@ -33,7 +33,7 @@ import {
   Trash2,
   Puzzle,
 } from 'lucide-react';
-import JSZip from 'jszip';
+import { downloadExtensionBundleZip } from '../utils/extensionBundle';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -799,46 +799,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </p>
                   <div className="flex flex-wrap items-center gap-2 pt-1">
                     <button
-                      onClick={async () => {
-                        try {
-                          const zip = new JSZip();
-                          const files = [
-                            'manifest.json',
-                            'background.js',
-                            'newtab.html',
-                            'newtab.css',
-                            'newtab.js',
-                            'popup.html',
-                            'popup.css',
-                            'popup.js',
-                            'README.md',
-                          ];
-                          for (const f of files) {
-                            try {
-                              const r = await fetch(`/extension/${f}`);
-                              if (r.ok) zip.file(f, await r.text());
-                            } catch {}
-                          }
-                          const icons = zip.folder('icons');
-                          for (const s of ['16', '48', '128']) {
-                            try {
-                              const ir = await fetch(`/extension/icons/icon-${s}.png`);
-                              if (ir.ok) icons?.file(`icon-${s}.png`, await ir.blob());
-                            } catch {}
-                          }
-                          const blob = await zip.generateAsync({ type: 'blob' });
-                          const url = URL.createObjectURL(blob);
-                          const a = document.createElement('a');
-                          a.href = url;
-                          a.download = 'meh-browser-chrome-extension.zip';
-                          document.body.appendChild(a);
-                          a.click();
-                          document.body.removeChild(a);
-                          URL.revokeObjectURL(url);
-                        } catch (e) {
-                          console.error(e);
-                        }
-                      }}
+                      onClick={() => downloadExtensionBundleZip()}
                       className="px-4 py-2 rounded-xl text-xs font-bold text-slate-950 shadow-lg flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
                       style={{ backgroundColor: theme.primaryColor }}
                     >
