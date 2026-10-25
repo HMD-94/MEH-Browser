@@ -10,6 +10,7 @@ import {
 import liquidGlassImg from '../assets/images/wallpaper_liquid_glass_1790369675962.jpg';
 import auroraDriftImg from '../assets/images/wallpaper_aurora_drift_1790369689882.jpg';
 import sunsetPrismImg from '../assets/images/wallpaper_sunset_prism_1790369703033.jpg';
+import sakuraBloomImg from '../assets/images/wallpaper_sakura_bloom.jpg';
 
 export interface WallpaperPreset {
   id: string;
@@ -22,7 +23,10 @@ export interface WallpaperPreset {
 }
 
 export function resolveWallpaperUrl(url?: string): string {
-  if (!url) return liquidGlassImg;
+  if (!url) return sakuraBloomImg;
+  if (url.includes('sakura') || url.includes('cherry')) {
+    return sakuraBloomImg;
+  }
   if (url.includes('wallpaper_liquid_glass') || url.includes('liquid-glass')) {
     return liquidGlassImg;
   }
@@ -36,6 +40,13 @@ export function resolveWallpaperUrl(url?: string): string {
 }
 
 export const WALLPAPER_PRESETS: WallpaperPreset[] = [
+  {
+    id: 'sakura-bloom',
+    name: 'Sakura Cerisiers Japonais 4K',
+    category: 'nature',
+    imageUrl: sakuraBloomImg,
+    thumbnailUrl: sakuraBloomImg,
+  },
   {
     id: 'liquid-glass-flow',
     name: 'Liquid Glass Ribbon',
@@ -446,24 +457,24 @@ export const DEFAULT_BOOKMARKS: Bookmark[] = [
 
 export const DEFAULT_WALLPAPER: WallpaperConfig = {
   type: 'preset',
-  presetId: 'liquid-glass-flow',
+  presetId: 'sakura-bloom',
   blur: 0,
-  opacity: 0.95,
+  opacity: 1.0,
   brightness: 1.0,
-  saturation: 1.1,
+  saturation: 1.05,
 };
 
 export const DEFAULT_THEME: ThemeConfig = {
   preset: 'dark-glass',
   mode: 'dark',
-  primaryColor: '#38bdf8',
-  secondaryColor: '#818cf8',
-  buttonColor: '#38bdf8',
-  glassTransparency: 0.72,
-  liquidGlassIntensity: 0.8,
-  glassBlur: 20,
+  primaryColor: '#f472b6',
+  secondaryColor: '#38bdf8',
+  buttonColor: '#f472b6',
+  glassTransparency: 0.65,
+  liquidGlassIntensity: 0.95,
+  glassBlur: 24,
   cornerRadius: 'rounded-2xl',
-  shadowDepth: 'medium',
+  shadowDepth: 'glow',
   animationsEnabled: true,
   animationSpeed: 'normal',
   font: 'Plus Jakarta Sans',

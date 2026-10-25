@@ -163,6 +163,24 @@ export async function downloadExtensionBundleZip(): Promise<void> {
   iconsFolder?.file('icon-48.png', iconBytes);
   iconsFolder?.file('icon-128.png', iconBytes);
 
+  // 6. Wallpapers folder (including default Sakura Bloom 4K)
+  const wallpapersFolder = zip.folder('wallpapers');
+  const wallpaperList = [
+    'sakura-bloom.jpg',
+    'liquid-glass.jpg',
+    'aurora-drift.jpg',
+    'sunset-prism.jpg'
+  ];
+  for (const wp of wallpaperList) {
+    try {
+      const res = await fetch(`extension/wallpapers/${wp}`).catch(() => fetch(`/extension/wallpapers/${wp}`));
+      if (res && res.ok) {
+        const buffer = await res.arrayBuffer();
+        wallpapersFolder?.file(wp, buffer);
+      }
+    } catch {}
+  }
+
   // 6. Generate the ZIP blob
   const blob = await zip.generateAsync({
     type: 'blob',

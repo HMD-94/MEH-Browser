@@ -193,39 +193,36 @@ export const NewTabPage: React.FC<NewTabPageProps> = ({
             </div>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white drop-shadow-md text-crisp flex items-center gap-2">
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white drop-shadow-lg text-crisp flex items-center gap-2">
             <span style={{ color: theme.primaryColor }}>MEH</span>
             <span className="font-light text-white">Browser</span>
           </h1>
 
           {/* Live Clock & Date with Crisp Readability Shadow */}
-          <div className="flex flex-col items-center mt-2.5 text-center">
-            <div className="text-2xl sm:text-3xl font-bold text-white tracking-widest font-mono text-crisp">
+          <div className="flex flex-col items-center mt-3 text-center">
+            <div className="text-3xl sm:text-4xl font-extrabold text-white tracking-widest font-mono drop-shadow-md">
               {formattedTime}
             </div>
-            <div className="text-xs sm:text-sm text-slate-200 capitalize mt-1 font-semibold text-crisp-subtle bg-black/30 px-3 py-0.5 rounded-full border border-white/10">
+            <div className="text-xs sm:text-sm text-white/90 capitalize mt-1.5 font-medium px-4 py-1 rounded-full liquid-glass border border-white/30 shadow-md">
               {formattedDate}
             </div>
           </div>
         </div>
 
-        {/* Big Central Search Bar with High Contrast Liquid Glass */}
+        {/* Big Central Search Bar with Pure Crystal Liquid Glass */}
         <form
           onSubmit={handleSearchSubmit}
-          className={`w-full relative flex items-center h-14 sm:h-16 px-4 rounded-3xl liquid-glass shadow-2xl transition-all duration-300 group focus-within:ring-2 focus-within:ring-sky-400 focus-within:border-sky-300 mb-8 border-2 border-white/30`}
-          style={{
-            backgroundColor: 'rgba(10, 15, 26, 0.78)',
-          }}
+          className="w-full relative flex items-center h-14 sm:h-16 px-4 rounded-3xl liquid-glass shadow-2xl transition-all duration-300 group focus-within:ring-2 focus-within:ring-pink-300 focus-within:border-white mb-8 border border-white/40"
         >
           {/* Engine Selector inside search bar */}
           <div className="relative shrink-0 mr-3">
             <button
               type="button"
               onClick={() => setIsEngineDropdownOpen(!isEngineDropdownOpen)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-white/15 hover:bg-white/25 text-xs text-white font-bold transition-all border border-white/20 shadow-sm"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-white/20 hover:bg-white/30 text-xs text-white font-bold transition-all border border-white/30 shadow-sm"
             >
               <span
-                className="w-2.5 h-2.5 rounded-full ring-2 ring-white/30"
+                className="w-2.5 h-2.5 rounded-full ring-2 ring-white/50"
                 style={{ backgroundColor: currentSearchEngine.color }}
               />
               <span className="hidden sm:inline text-white">{currentSearchEngine.name}</span>
@@ -233,8 +230,8 @@ export const NewTabPage: React.FC<NewTabPageProps> = ({
             </button>
 
             {isEngineDropdownOpen && (
-              <div className="absolute left-0 top-full mt-2 w-48 rounded-2xl liquid-glass shadow-2xl border border-white/30 py-2 z-50 text-xs bg-slate-950/95">
-                <div className="px-3 py-1 text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+              <div className="absolute left-0 top-full mt-2 w-48 rounded-2xl liquid-glass shadow-2xl border border-white/30 py-2 z-50 text-xs backdrop-blur-2xl">
+                <div className="px-3 py-1 text-[10px] uppercase font-bold text-white/70 tracking-wider">
                   Moteur de recherche
                 </div>
                 {DEFAULT_SEARCH_ENGINES.map((engine) => (
@@ -247,7 +244,7 @@ export const NewTabPage: React.FC<NewTabPageProps> = ({
                     }}
                     className={`w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-white/20 transition-colors ${
                       engine.id === currentSearchEngine.id
-                        ? 'text-sky-300 font-bold bg-white/15'
+                        ? 'text-pink-300 font-bold bg-white/20'
                         : 'text-white font-medium'
                     }`}
                   >
@@ -262,14 +259,14 @@ export const NewTabPage: React.FC<NewTabPageProps> = ({
             )}
           </div>
 
-          <Search className="w-5 h-5 text-white/70 shrink-0 mr-2" />
+          <Search className="w-5 h-5 text-white/80 shrink-0 mr-2" />
 
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={`Rechercher avec ${currentSearchEngine.name} ou entrer un site...`}
-            className="w-full bg-transparent text-sm sm:text-base text-white font-medium placeholder-slate-300/80 focus:outline-none tracking-wide text-crisp-subtle"
+            className="w-full bg-transparent text-sm sm:text-base text-white font-medium placeholder-white/60 focus:outline-none tracking-wide text-crisp"
             autoFocus
           />
 
@@ -277,7 +274,7 @@ export const NewTabPage: React.FC<NewTabPageProps> = ({
             <button
               type="button"
               onClick={() => setSearchQuery('')}
-              className="p-1.5 rounded-xl hover:bg-white/20 text-white/70 hover:text-white transition-colors mr-1"
+              className="p-1.5 rounded-xl hover:bg-white/20 text-white/80 hover:text-white transition-colors mr-1"
             >
               <X className="w-4 h-4" />
             </button>
@@ -285,7 +282,7 @@ export const NewTabPage: React.FC<NewTabPageProps> = ({
 
           <button
             type="submit"
-            className="px-5 py-2.5 rounded-2xl text-xs font-bold text-white transition-all shadow-lg hover:brightness-110 active:scale-95 shrink-0 border border-white/20"
+            className="px-5 py-2.5 rounded-2xl text-xs font-bold text-slate-950 transition-all shadow-xl hover:brightness-110 active:scale-95 shrink-0 border border-white/40"
             style={{ backgroundColor: theme.primaryColor }}
           >
             Explorer
@@ -295,12 +292,12 @@ export const NewTabPage: React.FC<NewTabPageProps> = ({
         {/* Speed Dial / Raccourcis Favoris with Enhanced Legibility */}
         <div className="w-full">
           <div className="flex items-center justify-between px-2 mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-white text-crisp-subtle">
+            <span className="text-xs font-bold uppercase tracking-wider text-white text-crisp">
               Raccourcis favoris
             </span>
             <button
               onClick={() => setIsAddModalOpen(true)}
-              className="flex items-center gap-1 text-xs text-sky-300 hover:text-sky-200 transition-colors font-bold bg-black/30 px-2.5 py-1 rounded-full border border-sky-400/30"
+              className="flex items-center gap-1 text-xs text-white hover:text-pink-200 transition-colors font-bold liquid-glass px-3 py-1 rounded-full border border-white/30 shadow-sm"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Ajouter</span>
@@ -311,10 +308,7 @@ export const NewTabPage: React.FC<NewTabPageProps> = ({
             {speedDial.map((item) => (
               <div
                 key={item.id}
-                className="group relative flex flex-col items-center justify-center p-3.5 rounded-2xl liquid-glass hover:bg-white/20 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl border-2 border-white/20"
-                style={{
-                  backgroundColor: 'rgba(10, 15, 26, 0.75)',
-                }}
+                className="group relative flex flex-col items-center justify-center p-3.5 rounded-2xl liquid-glass hover:bg-white/25 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl border border-white/30"
                 onClick={() => onNavigate(item.url)}
               >
                 {/* Delete Shortcut button */}
@@ -324,19 +318,18 @@ export const NewTabPage: React.FC<NewTabPageProps> = ({
                     e.stopPropagation();
                     onRemoveSpeedDial(item.id);
                   }}
-                  className="absolute top-1.5 right-1.5 p-1 rounded-full bg-black/60 text-white/60 hover:text-rose-400 hover:bg-black/90 opacity-0 group-hover:opacity-100 transition-all z-20"
+                  className="absolute top-1.5 right-1.5 p-1 rounded-full bg-black/50 text-white/70 hover:text-rose-400 hover:bg-black/80 opacity-0 group-hover:opacity-100 transition-all z-20"
                   title="Supprimer le raccourci"
                 >
                   <Trash2 className="w-3 h-3" />
                 </button>
 
                 <div
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center mb-2 shadow-md border-2"
+                  className="w-12 h-12 rounded-2xl flex items-center justify-center mb-2 shadow-md border border-white/40"
                   style={{
                     backgroundColor: item.color
-                      ? `${item.color}44`
-                      : 'rgba(255, 255, 255, 0.15)',
-                    borderColor: item.color || 'rgba(255, 255, 255, 0.4)',
+                      ? `${item.color}35`
+                      : 'rgba(255, 255, 255, 0.25)',
                   }}
                 >
                   <Compass
@@ -344,10 +337,10 @@ export const NewTabPage: React.FC<NewTabPageProps> = ({
                     style={{ color: item.color || '#38bdf8' }}
                   />
                 </div>
-                <span className="text-xs font-bold text-white truncate max-w-[110px] text-center text-crisp-subtle">
+                <span className="text-xs font-bold text-white truncate max-w-[110px] text-center text-crisp">
                   {item.title}
                 </span>
-                <span className="text-[10px] text-slate-300 font-medium truncate max-w-[110px]">
+                <span className="text-[10px] text-white/80 font-medium truncate max-w-[110px]">
                   {item.url.replace(/^https?:\/\//, '')}
                 </span>
               </div>
@@ -357,16 +350,13 @@ export const NewTabPage: React.FC<NewTabPageProps> = ({
             <button
               type="button"
               onClick={() => setIsAddModalOpen(true)}
-              className="flex flex-col items-center justify-center p-3.5 rounded-2xl liquid-glass hover:bg-white/20 border-2 border-dashed border-white/30 hover:border-white/60 transition-all duration-200 text-white group"
-              style={{
-                backgroundColor: 'rgba(10, 15, 26, 0.6)',
-              }}
+              className="flex flex-col items-center justify-center p-3.5 rounded-2xl liquid-glass hover:bg-white/25 border border-dashed border-white/40 hover:border-white transition-all duration-200 text-white group"
             >
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-white/10 group-hover:bg-white/20 mb-2 transition-colors border border-white/20">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-white/15 group-hover:bg-white/25 mb-2 transition-colors border border-white/30">
                 <Plus className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xs font-bold text-white text-crisp-subtle">Nouveau</span>
-              <span className="text-[10px] text-slate-300">Raccourci</span>
+              <span className="text-xs font-bold text-white text-crisp">Nouveau</span>
+              <span className="text-[10px] text-white/80">Raccourci</span>
             </button>
           </div>
         </div>

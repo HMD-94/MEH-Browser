@@ -241,35 +241,22 @@ export const WallpaperBackground: React.FC<WallpaperBackgroundProps> = React.mem
 
       {renderBackground()}
 
-      {/* High-visibility contrast scrim layer ensuring foreground text & glass is always sharp */}
+      {/* Crystal Clear Light Scrim layer ensuring wallpaper is vibrant yet readable */}
       <div
         className="absolute inset-0 pointer-events-none transition-opacity duration-300"
         style={{
           background:
-            theme.mode === 'light'
-              ? 'radial-gradient(ellipse at 50% 40%, rgba(255,255,255,0.2) 0%, rgba(240,244,250,0.65) 100%)'
-              : 'radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0.25) 0%, rgba(5,8,16,0.78) 100%)',
+            'linear-gradient(180deg, rgba(15, 23, 42, 0.18) 0%, rgba(15, 23, 42, 0.08) 40%, rgba(15, 23, 42, 0.38) 100%)',
         }}
       />
 
-      {/* Subtle Liquid Glass Mesh Grid / Vignette */}
-      <div
-        className="absolute inset-0 pointer-events-none transition-opacity duration-300"
-        style={{
-          background:
-            theme.mode === 'light'
-              ? 'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05) 0%, rgba(220,230,245,0.4) 100%)'
-              : 'radial-gradient(circle at 50% 50%, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.65) 100%)',
-        }}
-      />
-
-      {/* Interactive Liquid Glass Light Caustic Reflection using CSS variables */}
+      {/* Interactive Liquid Glass Light Caustic Reflection */}
       {theme.mouseGlowEnabled && (
         <div
           className="absolute inset-0 pointer-events-none transition-opacity duration-150"
           style={{
             background:
-              'radial-gradient(700px circle at var(--mouse-x, 50vw) var(--mouse-y, 50vh), rgba(255, 255, 255, 0.08), transparent 60%)',
+              'radial-gradient(750px circle at var(--mouse-x, 50vw) var(--mouse-y, 50vh), rgba(255, 255, 255, 0.12), transparent 55%)',
           }}
         />
       )}

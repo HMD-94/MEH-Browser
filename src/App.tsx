@@ -36,6 +36,7 @@ import { HistoryDrawer } from './components/HistoryDrawer';
 import { DownloadsDrawer } from './components/DownloadsDrawer';
 import { MobileNavBar } from './components/MobileNavBar';
 import { ChromeExtensionModal } from './components/ChromeExtensionModal';
+import { SakuraPetals } from './components/SakuraPetals';
 
 function safeSetItem(key: string, value: string) {
   try {
@@ -715,6 +716,7 @@ export default function App() {
         wallpaper={wallpaper}
         theme={theme}
       />
+      <SakuraPetals />
 
       {/* 2. Top Window & Tab Bar & Omnibox */}
       <BrowserHeader

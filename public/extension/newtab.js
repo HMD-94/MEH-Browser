@@ -72,7 +72,7 @@ const QUOTES = [
 // State
 let currentEngine = 'google';
 let shortcuts = [];
-let currentWallpaper = 'liquid-glass';
+let currentWallpaper = 'sakura-bloom';
 let pomoInterval = null;
 let pomoSeconds = 25 * 60;
 let pomoIsRunning = false;
@@ -113,6 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initWidgets();
   initCustomizer();
   initCaustics();
+  initPetals();
   loadSavedPreferences();
 });
 
@@ -549,6 +550,7 @@ function initCustomizer() {
 
   // Wallpaper Cards
   const wpPresets = {
+    'sakura-bloom': 'url("wallpapers/sakura-bloom.jpg") center/cover no-repeat',
     'liquid-glass': 'linear-gradient(135deg, #091236 0%, #1e215d 50%, #20002c 100%)',
     'aurora-drift': 'linear-gradient(135deg, #051923 0%, #003554 40%, #006466 80%, #0b525b 100%)',
     'sunset-prism': 'linear-gradient(135deg, #2b0938 0%, #681a53 45%, #b83c50 85%, #f16853 100%)',
@@ -568,7 +570,7 @@ function initCustomizer() {
       bgContainer.style.background = `url('${customUrl}') center/cover no-repeat`;
       storage.set({ meh_wallpaper: 'custom', meh_custom_wp_url: customUrl });
     } else {
-      bgContainer.style.background = wpPresets[wpKey] || wpPresets['liquid-glass'];
+      bgContainer.style.background = wpPresets[wpKey] || wpPresets['sakura-bloom'];
       storage.set({ meh_wallpaper: wpKey });
     }
   }
@@ -657,3 +659,70 @@ function playBeep() {
 function escapeHtml(str) {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
+
+// Falling Sakura Petals Animation
+function initPetals() {
+  const canvas = document.getElementById('petalsCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  let width = (canvas.width = window.innerWidth);
+  let height = (canvas.height = window.innerHeight);
+
+  window.addEventListener('resize', () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  });
+
+  const colors = [
+    'rgba(255, 183, 197, 0.85)',
+    'rgba(255, 192, 203, 0.8)',
+    'rgba(255, 218, 224, 0.75)',
+    'rgba(244, 114, 182, 0.7)',
+  ];
+
+  const petals = [];
+  for (let i = 0; i < 20; i++) {
+    petals.push({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      size: Math.random() * 8 + 6,
+      speedX: Math.random() * 1.2 + 0.4,
+      speedY: Math.random() * 1.5 + 0.8,
+      rotation: Math.random() * 360,
+      rotationSpeed: (Math.random() - 0.5) * 2,
+      opacity: Math.random() * 0.4 + 0.6,
+      color: colors[Math.floor(Math.random() * colors.length)],
+    });
+  }
+
+  function render() {
+    ctx.clearRect(0, 0, width, height);
+    for (let i = 0; i < petals.length; i++) {
+      const p = petals[i];
+      p.x += p.speedX + Math.sin(p.y * 0.01) * 0.6;
+      p.y += p.speedY;
+      p.rotation += p.rotationSpeed;
+
+      if (p.y > height + 20) { p.y = -20; p.x = Math.random() * width; }
+      if (p.x > width + 20) { p.x = -20; }
+
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate((p.rotation * Math.PI) / 180);
+      ctx.globalAlpha = p.opacity;
+      ctx.fillStyle = p.color;
+
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.bezierCurveTo(-p.size / 2, -p.size / 2, -p.size / 2, p.size / 2, 0, p.size);
+      ctx.bezierCurveTo(p.size / 2, p.size / 2, p.size / 2, -p.size / 2, 0, 0);
+      ctx.fill();
+      ctx.restore();
+    }
+    requestAnimationFrame(render);
+  }
+  render();
+}
+
