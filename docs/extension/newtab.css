@@ -33,14 +33,18 @@ body {
   z-index: -1;
   background-image: url('wallpapers/sakura-bloom.jpg');
   background-size: cover;
-  background-position: center;
-  transition: background-image 0.6s ease-in-out;
+  background-position: center 35%;
+  background-repeat: no-repeat;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: high-quality;
+  transform: translateZ(0);
+  transition: background-image 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .bg-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.15) 0%, rgba(15, 23, 42, 0.05) 50%, rgba(15, 23, 42, 0.35) 100%);
+  background: radial-gradient(circle at 50% 25%, rgba(255, 255, 255, 0.08) 0%, rgba(12, 18, 32, 0.18) 100%);
   backdrop-filter: blur(var(--glass-blur, 0px));
   -webkit-backdrop-filter: blur(var(--glass-blur, 0px));
 }
@@ -180,7 +184,58 @@ body {
   justify-content: center;
 }
 
-/* Main Content */
+/* Dock Toggle Pill in top nav */
+.dock-toggle-bar {
+  display: flex;
+  align-items: center;
+  padding: 0.2rem 0.35rem;
+  gap: 0.25rem;
+}
+
+.dock-side-btn {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.28rem 0.65rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.dock-side-btn:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.dock-side-btn.active {
+  background: rgba(255, 255, 255, 0.28);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.5);
+}
+
+.dock-side-btn.icon-only {
+  padding: 0.28rem 0.45rem;
+}
+
+/* Workspace Shell */
+.workspace-shell {
+  flex: 1;
+  display: flex;
+  position: relative;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Main Content: smoothly shifts when dock is placed on right or left! */
 .main-content {
   flex: 1;
   display: flex;
@@ -188,8 +243,23 @@ body {
   align-items: center;
   justify-content: center;
   width: 100%;
-  max-width: 960px;
+  max-width: 900px;
   margin: 0 auto;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), margin 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+/* Dynamic Shift: when widgets are placed on Right, search bar & hero shift Left! */
+@media (min-width: 1200px) {
+  .app-layout.dock-right .main-content {
+    transform: translateX(-155px);
+  }
+  .app-layout.dock-left .main-content {
+    transform: translateX(155px);
+  }
+  .app-layout.dock-hidden .main-content {
+    transform: translateX(0);
+  }
 }
 
 /* Clock & Greeting */
@@ -523,82 +593,428 @@ body {
   color: var(--primary-accent);
 }
 
-/* Widgets Dock */
+/* Widgets Dock (Floating Liquid Glass Sidebar) */
 .widgets-dock {
-  width: 100%;
-  max-width: 860px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.25rem;
-  margin-top: 1rem;
-  animation: fadeInUp 0.5s ease-out;
-}
-
-.widget-card {
-  background: rgba(15, 23, 42, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 20px;
-  padding: 1rem 1.2rem;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+  position: fixed;
+  top: 5.2rem;
+  bottom: 3.5rem;
+  width: 320px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.08) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 26px;
+  backdrop-filter: blur(28px) saturate(190%) contrast(105%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(105%);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22),
+              inset 0 1.5px 2px rgba(255, 255, 255, 0.75),
+              inset 0 -1px 1px rgba(255, 255, 255, 0.2);
   display: flex;
   flex-direction: column;
+  z-index: 30;
+  transition: right 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              left 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+/* Docking Positioning */
+.app-layout.dock-right .widgets-dock {
+  right: 1.5rem;
+  left: auto;
+  transform: translateX(0);
+}
+
+.app-layout.dock-left .widgets-dock {
+  left: 1.5rem;
+  right: auto;
+  transform: translateX(0);
+}
+
+.app-layout.dock-hidden .widgets-dock {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.95);
+}
+
+/* Dock Header */
+.dock-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1.1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.dock-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.dock-title {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: white;
+  letter-spacing: -0.01em;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.dock-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.dock-pill-action, .dock-pill-close {
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: white;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.22rem 0.55rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dock-pill-action:hover, .dock-pill-close:hover {
+  background: rgba(255, 255, 255, 0.28);
+  transform: translateY(-1px);
+}
+
+/* Scrollable widgets list */
+.dock-content-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.dock-content-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+.dock-content-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 9999px;
+}
+
+/* Widget Card - Liquid Glass */
+.widget-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.07) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 18px;
+  padding: 0.85rem 1rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12),
+              inset 0 1px 1.5px rgba(255, 255, 255, 0.65),
+              inset 0 -1px 0.5px rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.widget-card:hover {
+  border-color: rgba(255, 255, 255, 0.45);
 }
 
 .widget-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.6rem;
 }
 
 .widget-title {
   font-size: 0.78rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: rgba(255, 255, 255, 0.8);
+  color: white;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .widget-badge {
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   padding: 0.15rem 0.5rem;
   border-radius: 9999px;
-  background: rgba(56, 189, 248, 0.15);
-  color: var(--primary-accent);
-  border: 1px solid rgba(56, 189, 248, 0.3);
+  background: rgba(255, 255, 255, 0.18);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-weight: 600;
 }
 
+/* Weather Body */
+.weather-main-row {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.6rem;
+}
+
+.weather-large-icon {
+  font-size: 2.2rem;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
+}
+
+.weather-temp-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.weather-huge-temp {
+  font-size: 1.7rem;
+  font-weight: 800;
+  line-height: 1;
+  color: white;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.3);
+}
+
+.weather-desc {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.weather-details-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0.45rem 0.6rem;
+  margin-bottom: 0.6rem;
+}
+
+.weather-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.weather-stat-label {
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+}
+
+.weather-stat-val {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: white;
+}
+
+.weather-cities-strip {
+  display: flex;
+  gap: 0.3rem;
+  overflow-x: auto;
+  padding-bottom: 0.2rem;
+}
+
+.weather-cities-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.city-chip {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.city-chip:hover, .city-chip.active {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* To-Do List */
+.todo-input-row {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+
+.widget-input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+  padding: 0.4rem 0.65rem;
+  font-size: 0.78rem;
+  color: white;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.widget-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.widget-input:focus {
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.todo-add-btn {
+  background: var(--primary-accent);
+  color: #030712;
+  border: none;
+  border-radius: 10px;
+  width: 28px;
+  height: 28px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.todo-add-btn:hover {
+  filter: brightness(1.15);
+  transform: scale(1.05);
+}
+
+.todo-items-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-height: 140px;
+  overflow-y: auto;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 0.35rem 0.55rem;
+  font-size: 0.78rem;
+  color: white;
+  transition: background 0.15s;
+}
+
+.todo-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.todo-item.completed span {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+.todo-checkbox {
+  cursor: pointer;
+  accent-color: var(--primary-accent);
+}
+
+.todo-del-btn {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0 0.2rem;
+}
+
+.todo-del-btn:hover {
+  color: #ef4444;
+}
+
+.todo-footer-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.4rem;
+}
+
+.dock-link-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.68rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0.1rem;
+}
+
+.dock-link-btn:hover {
+  color: white;
+}
+
+/* Notes Textarea */
 .widget-textarea {
   flex: 1;
-  background: rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
   color: white;
   padding: 0.6rem;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   resize: none;
   outline: none;
   min-height: 70px;
+  line-height: 1.4;
 }
 
 .widget-textarea:focus {
-  border-color: var(--primary-accent);
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.12);
 }
 
+.widget-card-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.3rem;
+}
+
+/* Pomodoro Modes & Display */
 .pomo-display {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.5rem;
 }
 
 .pomo-time {
-  font-size: 1.8rem;
+  font-size: 1.9rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   color: white;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.pomo-modes-strip {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.2rem;
+}
+
+.pomo-mode-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  border-radius: 9999px;
+  font-size: 0.68rem;
+  padding: 0.2rem 0.6rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.pomo-mode-btn.active {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  font-weight: 700;
 }
 
 .pomo-controls {
@@ -611,6 +1027,53 @@ body {
   padding: 0.35rem 0.75rem;
 }
 
+/* Zen Audio */
+.zen-sound-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.35rem;
+  margin-bottom: 0.6rem;
+}
+
+.zen-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  border-radius: 10px;
+  padding: 0.35rem 0.3rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  transition: all 0.15s;
+}
+
+.zen-btn:hover, .zen-btn.active {
+  background: rgba(255, 255, 255, 0.28);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.zen-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.zen-volume-box {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 1;
+}
+
+.mini-range {
+  height: 4px;
+}
+
+/* Quotes */
 .quote-content {
   display: flex;
   flex-direction: column;
@@ -622,7 +1085,7 @@ body {
   font-size: 0.82rem;
   font-style: italic;
   line-height: 1.4;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.95);
   margin-bottom: 0.35rem;
 }
 

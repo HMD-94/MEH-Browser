@@ -31,14 +31,18 @@
           <span id="weatherCity" class="weather-city">Paris</span>
         </div>
 
+        <!-- Dock Position / Toggle Pill -->
+        <div class="dock-toggle-bar glass-pill" title="Position des widgets Liquid Glass">
+          <button type="button" id="btnDockLeft" class="dock-side-btn" title="Placer les widgets à gauche">◧ Gauche</button>
+          <button type="button" id="btnDockRight" class="dock-side-btn active" title="Placer les widgets à droite">Droite ◨</button>
+          <button type="button" id="btnToggleWidgets" class="dock-side-btn icon-only" title="Afficher / Masquer les widgets">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          </button>
+        </div>
+
         <!-- Customize button -->
         <button id="btnCustomize" class="glass-btn icon-btn" title="Changer le fond d'écran et le style">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.563-2.512 5.563-5.563C22 6.5 17.5 2 12 2z"/></svg>
-        </button>
-
-        <!-- Widgets button -->
-        <button id="btnToggleWidgets" class="glass-btn icon-btn" title="Afficher les widgets (Notes, Focus, Météo)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
         </button>
 
         <!-- Settings button -->
@@ -48,128 +52,235 @@
       </div>
     </header>
 
-    <!-- Main Content Area -->
-    <main class="main-content">
-      <!-- Time & Greeting -->
-      <section class="hero-section">
-        <div id="clockDisplay" class="clock-display">12:00:00</div>
-        <div class="greeting-row">
-          <span id="greetingText" class="greeting-text">Bonjour</span>
-          <span class="greeting-dot">•</span>
-          <span id="dateDisplay" class="date-display">Dimanche 25 octobre</span>
-        </div>
-      </section>
+    <!-- Workspace Shell (Allows smooth offset when dock is left or right) -->
+    <div class="workspace-shell">
+      <!-- Main Content Area -->
+      <main class="main-content" id="mainContent">
+        <!-- Time & Greeting -->
+        <section class="hero-section">
+          <div id="clockDisplay" class="clock-display">12:00:00</div>
+          <div class="greeting-row">
+            <span id="greetingText" class="greeting-text">Bonjour</span>
+            <span class="greeting-dot">•</span>
+            <span id="dateDisplay" class="date-display">Dimanche 25 octobre</span>
+          </div>
+        </section>
 
-      <!-- Search Section -->
-      <section class="search-section">
-        <form id="searchForm" class="search-bar-glass" autocomplete="off">
-          <!-- Search Engine Switcher -->
-          <div class="engine-dropdown-wrap">
-            <button type="button" id="btnEngineSelect" class="engine-btn" title="Changer de moteur">
-              <span id="engineBadge" class="engine-badge google">G</span>
-              <span id="engineLabel" class="engine-label">Google</span>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        <!-- Search Section -->
+        <section class="search-section">
+          <form id="searchForm" class="search-bar-glass" autocomplete="off">
+            <!-- Search Engine Switcher -->
+            <div class="engine-dropdown-wrap">
+              <button type="button" id="btnEngineSelect" class="engine-btn" title="Changer de moteur">
+                <span id="engineBadge" class="engine-badge google">G</span>
+                <span id="engineLabel" class="engine-label">Google</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </button>
+              <div id="engineMenu" class="engine-menu hidden">
+                <div class="menu-item" data-engine="google">
+                  <span class="engine-badge google">G</span>
+                  <span>Google</span>
+                </div>
+                <div class="menu-item" data-engine="duckduckgo">
+                  <span class="engine-badge ddg">🦆</span>
+                  <span>DuckDuckGo</span>
+                </div>
+                <div class="menu-item" data-engine="qwant">
+                  <span class="engine-badge qwant">Q</span>
+                  <span>Qwant</span>
+                </div>
+                <div class="menu-item" data-engine="bing">
+                  <span class="engine-badge bing">b</span>
+                  <span>Bing</span>
+                </div>
+                <div class="menu-item" data-engine="ecosia">
+                  <span class="engine-badge ecosia">🌱</span>
+                  <span>Ecosia</span>
+                </div>
+                <div class="menu-item" data-engine="youtube">
+                  <span class="engine-badge yt">▶</span>
+                  <span>YouTube</span>
+                </div>
+                <div class="menu-item" data-engine="wikipedia">
+                  <span class="engine-badge wiki">W</span>
+                  <span>Wikipédia</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Search Input -->
+            <input
+              type="text"
+              id="searchInput"
+              class="search-input"
+              placeholder="Rechercher sur le web ou entrer une adresse URL..."
+              autofocus
+            >
+
+            <!-- Voice & Clear Buttons -->
+            <button type="button" id="btnClearSearch" class="search-action-btn hidden" title="Effacer">✕</button>
+            <button type="button" id="btnVoiceSearch" class="search-action-btn" title="Recherche vocale">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
             </button>
-            <div id="engineMenu" class="engine-menu hidden">
-              <div class="menu-item" data-engine="google">
-                <span class="engine-badge google">G</span>
-                <span>Google</span>
+            <button type="submit" class="search-submit-btn" title="Lancer la recherche">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </button>
+
+            <!-- Autocomplete Dropdown -->
+            <div id="suggestionsList" class="suggestions-dropdown hidden"></div>
+          </form>
+        </section>
+
+        <!-- Speed Dial Shortcuts Grid -->
+        <section class="speed-dial-section">
+          <div id="speedDialGrid" class="speed-dial-grid">
+            <!-- Dynamically populated -->
+          </div>
+        </section>
+      </main>
+
+      <!-- Glass Widgets Dock (Dockable Left or Right, with real useful widgets) -->
+      <aside id="widgetsDock" class="widgets-dock" aria-label="Widgets Utiles">
+        <!-- Dock Header -->
+        <div class="dock-header">
+          <div class="dock-title-group">
+            <span class="dock-icon">✨</span>
+            <span class="dock-title">Liquid Glass Widgets</span>
+          </div>
+          <div class="dock-actions">
+            <button type="button" id="btnSwitchSide" class="dock-pill-action" title="Basculer gauche / droite">
+              ⇄ <span id="lblDockSide">Droite</span>
+            </button>
+            <button type="button" id="btnCloseDock" class="dock-pill-close" title="Masquer les widgets">✕</button>
+          </div>
+        </div>
+
+        <div class="dock-content-scroll">
+          <!-- Widget 1: Live Weather & City Switcher -->
+          <div class="widget-card widget-weather-card">
+            <div class="widget-header">
+              <span class="widget-title">🌤️ Météo en Direct</span>
+              <span id="weatherFeel" class="widget-badge">Ressenti 21°C</span>
+            </div>
+            <div class="weather-body">
+              <div class="weather-main-row">
+                <span id="weatherMainIcon" class="weather-large-icon">⛅</span>
+                <div class="weather-temp-block">
+                  <span id="weatherMainTemp" class="weather-huge-temp">19°C</span>
+                  <span id="weatherConditionText" class="weather-desc">Éclaircies douces</span>
+                </div>
               </div>
-              <div class="menu-item" data-engine="duckduckgo">
-                <span class="engine-badge ddg">🦆</span>
-                <span>DuckDuckGo</span>
+              <div class="weather-details-grid">
+                <div class="weather-stat">
+                  <span class="weather-stat-label">Ville</span>
+                  <span id="weatherMainCity" class="weather-stat-val">Paris</span>
+                </div>
+                <div class="weather-stat">
+                  <span class="weather-stat-label">Humidité</span>
+                  <span id="weatherHumidity" class="weather-stat-val">54%</span>
+                </div>
+                <div class="weather-stat">
+                  <span class="weather-stat-label">Vent</span>
+                  <span id="weatherWind" class="weather-stat-val">12 km/h</span>
+                </div>
               </div>
-              <div class="menu-item" data-engine="qwant">
-                <span class="engine-badge qwant">Q</span>
-                <span>Qwant</span>
-              </div>
-              <div class="menu-item" data-engine="bing">
-                <span class="engine-badge bing">b</span>
-                <span>Bing</span>
-              </div>
-              <div class="menu-item" data-engine="ecosia">
-                <span class="engine-badge ecosia">🌱</span>
-                <span>Ecosia</span>
-              </div>
-              <div class="menu-item" data-engine="youtube">
-                <span class="engine-badge yt">▶</span>
-                <span>YouTube</span>
-              </div>
-              <div class="menu-item" data-engine="wikipedia">
-                <span class="engine-badge wiki">W</span>
-                <span>Wikipédia</span>
+              <!-- City Selector Chips -->
+              <div class="weather-cities-strip">
+                <button type="button" class="city-chip active" data-city="Paris" data-lat="48.8566" data-lon="2.3522">Paris</button>
+                <button type="button" class="city-chip" data-city="Marseille" data-lat="43.2965" data-lon="5.3698">Marseille</button>
+                <button type="button" class="city-chip" data-city="Lyon" data-lat="45.7640" data-lon="4.8357">Lyon</button>
+                <button type="button" class="city-chip" data-city="Tokyo" data-lat="35.6762" data-lon="139.6503">Tokyo</button>
+                <button type="button" class="city-chip" data-city="New York" data-lat="40.7128" data-lon="-74.0060">New York</button>
+                <button type="button" class="city-chip" data-city="Montréal" data-lat="45.5017" data-lon="-73.5673">Montréal</button>
               </div>
             </div>
           </div>
 
-          <!-- Search Input -->
-          <input
-            type="text"
-            id="searchInput"
-            class="search-input"
-            placeholder="Rechercher sur le web ou entrer une adresse URL..."
-            autofocus
-          >
-
-          <!-- Voice & Clear Buttons -->
-          <button type="button" id="btnClearSearch" class="search-action-btn hidden" title="Effacer">✕</button>
-          <button type="button" id="btnVoiceSearch" class="search-action-btn" title="Recherche vocale">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-          </button>
-          <button type="submit" class="search-submit-btn" title="Lancer la recherche">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          </button>
-
-          <!-- Autocomplete Dropdown -->
-          <div id="suggestionsList" class="suggestions-dropdown hidden"></div>
-        </form>
-      </section>
-
-      <!-- Speed Dial Shortcuts Grid -->
-      <section class="speed-dial-section">
-        <div id="speedDialGrid" class="speed-dial-grid">
-          <!-- Dynamically populated -->
-        </div>
-      </section>
-
-      <!-- Glass Widgets Dock (Collapsible) -->
-      <section id="widgetsDock" class="widgets-dock">
-        <!-- Quick Notes Widget -->
-        <div class="widget-card">
-          <div class="widget-header">
-            <span class="widget-title">📝 Bloc-Notes Rapide</span>
-            <span id="noteSavedBadge" class="widget-badge hidden">Enregistré</span>
+          <!-- Widget 2: Interactive To-Do List -->
+          <div class="widget-card widget-todo-card">
+            <div class="widget-header">
+              <span class="widget-title">✅ Tâches du Jour</span>
+              <span id="todoCountBadge" class="widget-badge">0 à faire</span>
+            </div>
+            <form id="todoForm" class="todo-input-row">
+              <input type="text" id="todoInput" class="widget-input" placeholder="Ajouter une tâche... (Entrée)" maxlength="80">
+              <button type="submit" class="todo-add-btn" title="Ajouter">+</button>
+            </form>
+            <ul id="todoList" class="todo-items-list">
+              <!-- Dynamically populated -->
+            </ul>
+            <div class="todo-footer-row">
+              <button type="button" id="btnClearCompleted" class="dock-link-btn">Effacer terminées</button>
+            </div>
           </div>
-          <textarea id="quickNoteInput" class="widget-textarea" placeholder="Notez une idée, un numéro, un lien rapide..."></textarea>
-        </div>
 
-        <!-- Focus / Pomodoro Widget -->
-        <div class="widget-card">
-          <div class="widget-header">
-            <span class="widget-title">⏱️ Minuteur Focus</span>
-            <span id="pomoStatus" class="widget-badge">Session 25m</span>
+          <!-- Widget 3: Quick Scratchpad Note -->
+          <div class="widget-card widget-note-card">
+            <div class="widget-header">
+              <span class="widget-title">📝 Bloc-Notes Instantané</span>
+              <span id="noteSavedBadge" class="widget-badge hidden">✓ Enregistré</span>
+            </div>
+            <textarea id="quickNoteInput" class="widget-textarea" placeholder="Notez une idée, un numéro, un lien ou une réflexion..."></textarea>
+            <div class="widget-card-footer">
+              <span id="noteCharCount" class="text-xs text-white/50">0 caractères</span>
+            </div>
           </div>
-          <div class="pomo-display">
-            <div id="pomoTime" class="pomo-time">25:00</div>
-            <div class="pomo-controls">
-              <button id="pomoBtnStart" class="glass-pill active-pill">Démarrer</button>
-              <button id="pomoBtnReset" class="glass-pill">Réinitialiser</button>
+
+          <!-- Widget 4: Focus / Pomodoro Timer -->
+          <div class="widget-card widget-pomo-card">
+            <div class="widget-header">
+              <span class="widget-title">⏱️ Minuteur Focus</span>
+              <span id="pomoStatus" class="widget-badge">Session 25m</span>
+            </div>
+            <div class="pomo-display">
+              <div id="pomoTime" class="pomo-time">25:00</div>
+              <div class="pomo-modes-strip">
+                <button type="button" id="pomoMode25" class="pomo-mode-btn active">Focus 25m</button>
+                <button type="button" id="pomoMode5" class="pomo-mode-btn">Pause 5m</button>
+              </div>
+              <div class="pomo-controls">
+                <button type="button" id="pomoBtnStart" class="glass-pill active-pill">Démarrer</button>
+                <button type="button" id="pomoBtnReset" class="glass-pill">Réinitialiser</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Widget 5: Zen Audio & Lo-Fi Generator -->
+          <div class="widget-card widget-zen-card">
+            <div class="widget-header">
+              <span class="widget-title">🎧 Ambiance Zen</span>
+              <span id="zenAudioStatus" class="widget-badge">Arrêté</span>
+            </div>
+            <div class="zen-body">
+              <div class="zen-sound-buttons">
+                <button type="button" class="zen-btn active" data-sound="sakura">🌸 Brise Sakura</button>
+                <button type="button" class="zen-btn" data-sound="rain">🌧️ Pluie Douce</button>
+                <button type="button" class="zen-btn" data-sound="ocean">🌊 Vagues</button>
+              </div>
+              <div class="zen-controls-row">
+                <button type="button" id="btnToggleZenAudio" class="glass-pill active-pill">▶ Écouter</button>
+                <div class="zen-volume-box">
+                  <span class="text-xs text-white/70">Volume</span>
+                  <input type="range" id="zenVolumeSlider" min="0" max="100" value="40" class="glass-range mini-range">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Widget 6: Daily Quote Widget -->
+          <div class="widget-card widget-quote-card">
+            <div class="widget-header">
+              <span class="widget-title">💡 Inspiration</span>
+              <button type="button" id="btnNewQuote" class="dock-link-btn">Nouvelle</button>
+            </div>
+            <div class="quote-content">
+              <p id="quoteText" class="quote-text">« La simplicité est la sophistication suprême. »</p>
+              <span id="quoteAuthor" class="quote-author">— Léonard de Vinci</span>
             </div>
           </div>
         </div>
-
-        <!-- Daily Quote Widget -->
-        <div class="widget-card">
-          <div class="widget-header">
-            <span class="widget-title">💡 Inspiration</span>
-          </div>
-          <div class="quote-content">
-            <p id="quoteText" class="quote-text">« La simplicité est la sophistication suprême. »</p>
-            <span id="quoteAuthor" class="quote-author">— Léonard de Vinci</span>
-          </div>
-        </div>
-      </section>
-    </main>
+      </aside>
+    </div>
 
     <!-- Footer -->
     <footer class="bottom-bar">

@@ -394,136 +394,499 @@ function initSpeedDial() {
   });
 }
 
-// 5. Glass Widgets: Weather, Notes, Pomodoro
-function initWidgets() {
-  const btnToggleWidgets = document.getElementById('btnToggleWidgets');
-  const widgetsDock = document.getElementById('widgetsDock');
+// 5. Glass Widgets: Dock Position, Weather, To-Do, Notes, Pomodoro & Zen Audio
+let currentDockPosition = 'right';
+let isDockVisible = true;
+let zenAudioCtx = null;
+let zenSourceNode = null;
+let zenGainNode = null;
+let currentZenSound = 'sakura';
+let isZenPlaying = false;
+let todoTasks = [];
 
-  btnToggleWidgets.addEventListener('click', () => {
-    widgetsDock.classList.toggle('hidden');
-    storage.set({ meh_widgets_visible: !widgetsDock.classList.contains('hidden') });
+function initWidgets() {
+  const appLayout = document.querySelector('.app-layout');
+  const btnDockLeft = document.getElementById('btnDockLeft');
+  const btnDockRight = document.getElementById('btnDockRight');
+  const btnToggleWidgets = document.getElementById('btnToggleWidgets');
+  const btnSwitchSide = document.getElementById('btnSwitchSide');
+  const btnCloseDock = document.getElementById('btnCloseDock');
+  const lblDockSide = document.getElementById('lblDockSide');
+
+  // --- Dock Positioning & Visibility ---
+  function updateDockClasses() {
+    if (!appLayout) return;
+    appLayout.classList.remove('dock-left', 'dock-right', 'dock-hidden');
+    document.body.classList.remove('dock-left', 'dock-right', 'dock-hidden');
+
+    if (!isDockVisible) {
+      appLayout.classList.add('dock-hidden');
+      document.body.classList.add('dock-hidden');
+    } else {
+      appLayout.classList.add(currentDockPosition === 'left' ? 'dock-left' : 'dock-right');
+      document.body.classList.add(currentDockPosition === 'left' ? 'dock-left' : 'dock-right');
+    }
+
+    if (btnDockLeft) btnDockLeft.classList.toggle('active', isDockVisible && currentDockPosition === 'left');
+    if (btnDockRight) btnDockRight.classList.toggle('active', isDockVisible && currentDockPosition === 'right');
+    if (lblDockSide) lblDockSide.textContent = currentDockPosition === 'right' ? 'Droite' : 'Gauche';
+  }
+
+  function setDockPosition(pos) {
+    currentDockPosition = pos;
+    isDockVisible = true;
+    updateDockClasses();
+    storage.set({ meh_widget_position: pos, meh_widgets_visible: true });
+  }
+
+  function setDockVisible(visible) {
+    isDockVisible = visible;
+    updateDockClasses();
+    storage.set({ meh_widgets_visible: visible });
+  }
+
+  if (btnDockLeft) btnDockLeft.addEventListener('click', () => setDockPosition('left'));
+  if (btnDockRight) btnDockRight.addEventListener('click', () => setDockPosition('right'));
+  if (btnSwitchSide) btnSwitchSide.addEventListener('click', () => setDockPosition(currentDockPosition === 'right' ? 'left' : 'right'));
+  if (btnToggleWidgets) btnToggleWidgets.addEventListener('click', () => setDockVisible(!isDockVisible));
+  if (btnCloseDock) btnCloseDock.addEventListener('click', () => setDockVisible(false));
+
+  // Initialize dock with default Right
+  updateDockClasses();
+
+  // --- Live Weather Widget ---
+  initWeatherWidget();
+
+  // --- Interactive To-Do List ---
+  initTodoList();
+
+  // --- Quick Notes with Auto-Save ---
+  initQuickNotes();
+
+  // --- Pomodoro Timer ---
+  initPomodoroTimer();
+
+  // --- Zen Lo-Fi Nature Audio ---
+  initZenAudio();
+
+  // --- Inspirational Quotes ---
+  initQuotes();
+}
+
+// 5.1 Weather Controller
+function initWeatherWidget() {
+  const cities = {
+    'Paris': { lat: 48.8566, lon: 2.3522 },
+    'Marseille': { lat: 43.2965, lon: 5.3698 },
+    'Lyon': { lat: 45.7640, lon: 4.8357 },
+    'Tokyo': { lat: 35.6762, lon: 139.6503 },
+    'New York': { lat: 40.7128, lon: -74.0060 },
+    'Montréal': { lat: 45.5017, lon: -73.5673 }
+  };
+
+  const weatherPill = document.getElementById('weatherPill');
+  const weatherTemp = document.getElementById('weatherTemp');
+  const weatherCity = document.getElementById('weatherCity');
+  const weatherIcon = document.getElementById('weatherIcon');
+  const weatherMainTemp = document.getElementById('weatherMainTemp');
+  const weatherMainCity = document.getElementById('weatherMainCity');
+  const weatherMainIcon = document.getElementById('weatherMainIcon');
+  const weatherConditionText = document.getElementById('weatherConditionText');
+  const weatherFeel = document.getElementById('weatherFeel');
+  const weatherHumidity = document.getElementById('weatherHumidity');
+  const weatherWind = document.getElementById('weatherWind');
+
+  function getWeatherDesc(code) {
+    if (code === 0) return { text: 'Ciel dégagé', icon: '☀️' };
+    if (code <= 3) return { text: 'Éclaircies douces', icon: '⛅' };
+    if (code <= 48) return { text: 'Brumes légères', icon: '🌫️' };
+    if (code <= 55) return { text: 'Bruine fine', icon: '🌦️' };
+    if (code <= 67) return { text: 'Pluie douce', icon: '🌧️' };
+    if (code <= 77) return { text: 'Chute de neige', icon: '❄️' };
+    if (code <= 82) return { text: 'Averses', icon: '🌧️' };
+    return { text: 'Orage passager', icon: '⛈️' };
+  }
+
+  function fetchCityWeather(cityName) {
+    const coords = cities[cityName] || cities['Paris'];
+    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current_weather=true&hourly=relativehumidity_2m,apparent_temperature&timezone=auto`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.current_weather) {
+          const temp = Math.round(data.current_weather.temperature);
+          const wind = Math.round(data.current_weather.windspeed);
+          const code = data.current_weather.weathercode;
+          const { text, icon } = getWeatherDesc(code);
+
+          let humidity = 55;
+          let feel = temp;
+          if (data.hourly) {
+            humidity = data.hourly.relativehumidity_2m?.[0] || 55;
+            feel = Math.round(data.hourly.apparent_temperature?.[0] ?? temp);
+          }
+
+          if (weatherTemp) weatherTemp.textContent = `${temp}°C`;
+          if (weatherCity) weatherCity.textContent = cityName;
+          if (weatherIcon) weatherIcon.textContent = icon;
+          if (weatherMainTemp) weatherMainTemp.textContent = `${temp}°C`;
+          if (weatherMainCity) weatherMainCity.textContent = cityName;
+          if (weatherMainIcon) weatherMainIcon.textContent = icon;
+          if (weatherConditionText) weatherConditionText.textContent = text;
+          if (weatherFeel) weatherFeel.textContent = `Ressenti ${feel}°C`;
+          if (weatherHumidity) weatherHumidity.textContent = `${humidity}%`;
+          if (weatherWind) weatherWind.textContent = `${wind} km/h`;
+
+          document.querySelectorAll('.city-chip').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.city === cityName);
+          });
+          storage.set({ meh_weather_city: cityName });
+        }
+      })
+      .catch(() => {
+        if (weatherMainTemp) weatherMainTemp.textContent = '20°C';
+      });
+  }
+
+  // Bind city chips
+  document.querySelectorAll('.city-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      fetchCityWeather(chip.dataset.city);
+    });
   });
 
-  // Weather (Open-Meteo)
-  loadLiveWeather();
+  if (weatherPill) {
+    weatherPill.addEventListener('click', () => {
+      setDockVisible(true);
+    });
+  }
 
-  // Quick Notes with Auto-Save
+  // Load saved city or default Paris
+  storage.get(['meh_weather_city'], (res) => {
+    const saved = res.meh_weather_city || 'Paris';
+    fetchCityWeather(saved);
+  });
+}
+
+// 5.2 Interactive To-Do List Controller
+function initTodoList() {
+  const todoForm = document.getElementById('todoForm');
+  const todoInput = document.getElementById('todoInput');
+  const todoList = document.getElementById('todoList');
+  const todoCountBadge = document.getElementById('todoCountBadge');
+  const btnClearCompleted = document.getElementById('btnClearCompleted');
+
+  function renderTodos() {
+    if (!todoList) return;
+    todoList.innerHTML = '';
+    const pending = todoTasks.filter(t => !t.done).length;
+    if (todoCountBadge) {
+      todoCountBadge.textContent = `${pending} à faire`;
+    }
+
+    if (todoTasks.length === 0) {
+      const empty = document.createElement('li');
+      empty.className = 'text-xs text-white/50 text-center py-2';
+      empty.textContent = 'Aucune tâche. Ajoutez-en une !';
+      todoList.appendChild(empty);
+      return;
+    }
+
+    todoTasks.forEach((t, i) => {
+      const li = document.createElement('li');
+      li.className = `todo-item ${t.done ? 'completed' : ''}`;
+      li.innerHTML = `
+        <input type="checkbox" class="todo-checkbox" ${t.done ? 'checked' : ''} data-index="${i}">
+        <span class="flex-1 truncate">${escapeHtml(t.text)}</span>
+        <button type="button" class="todo-del-btn" data-index="${i}" title="Supprimer">✕</button>
+      `;
+
+      li.querySelector('.todo-checkbox').addEventListener('change', (e) => {
+        todoTasks[i].done = e.target.checked;
+        saveTodos();
+      });
+
+      li.querySelector('.todo-del-btn').addEventListener('click', () => {
+        todoTasks.splice(i, 1);
+        saveTodos();
+      });
+
+      todoList.appendChild(li);
+    });
+  }
+
+  function saveTodos() {
+    storage.set({ meh_todo_tasks: todoTasks }, renderTodos);
+  }
+
+  if (todoForm && todoInput) {
+    todoForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const val = todoInput.value.trim();
+      if (!val) return;
+      todoTasks.unshift({ id: String(Date.now()), text: val, done: false });
+      todoInput.value = '';
+      saveTodos();
+    });
+  }
+
+  if (btnClearCompleted) {
+    btnClearCompleted.addEventListener('click', () => {
+      todoTasks = todoTasks.filter(t => !t.done);
+      saveTodos();
+    });
+  }
+
+  // Load saved tasks
+  storage.get(['meh_todo_tasks'], (res) => {
+    todoTasks = res.meh_todo_tasks || [
+      { id: '1', text: 'Profiter du design Liquid Glass 🌸', done: true },
+      { id: '2', text: 'Découvrir les widgets personnalisables', done: false }
+    ];
+    renderTodos();
+  });
+}
+
+// 5.3 Quick Notes Controller
+function initQuickNotes() {
   const noteInput = document.getElementById('quickNoteInput');
   const noteBadge = document.getElementById('noteSavedBadge');
+  const noteCharCount = document.getElementById('noteCharCount');
+
+  if (!noteInput) return;
+
+  function updateCharCount() {
+    if (noteCharCount) {
+      noteCharCount.textContent = `${noteInput.value.length} caractères`;
+    }
+  }
 
   storage.get(['meh_quick_note'], (res) => {
     if (res.meh_quick_note) {
       noteInput.value = res.meh_quick_note;
+    } else {
+      noteInput.value = '🌸 Bienvenue sur MEH Browser Liquid Glass ! Notez ici vos idées, inspirations et liens essentiels.';
     }
+    updateCharCount();
   });
 
-  let noteTimer;
+  let timer;
   noteInput.addEventListener('input', () => {
-    clearTimeout(noteTimer);
-    noteBadge.classList.add('hidden');
-    noteTimer = setTimeout(() => {
+    updateCharCount();
+    clearTimeout(timer);
+    if (noteBadge) noteBadge.classList.add('hidden');
+    timer = setTimeout(() => {
       storage.set({ meh_quick_note: noteInput.value }, () => {
-        noteBadge.classList.remove('hidden');
-        setTimeout(() => noteBadge.classList.add('hidden'), 2000);
+        if (noteBadge) {
+          noteBadge.classList.remove('hidden');
+          setTimeout(() => noteBadge.classList.add('hidden'), 2000);
+        }
       });
-    }, 500);
+    }, 400);
   });
+}
 
-  // Pomodoro Timer
+// 5.4 Pomodoro Timer Controller
+function initPomodoroTimer() {
   const pomoTimeEl = document.getElementById('pomoTime');
   const btnStart = document.getElementById('pomoBtnStart');
   const btnReset = document.getElementById('pomoBtnReset');
   const pomoStatus = document.getElementById('pomoStatus');
+  const pomoMode25 = document.getElementById('pomoMode25');
+  const pomoMode5 = document.getElementById('pomoMode5');
 
-  function updatePomoDisplay() {
+  if (!pomoTimeEl || !btnStart) return;
+
+  let maxSeconds = 25 * 60;
+  pomoSeconds = maxSeconds;
+
+  function updateDisplay() {
     const m = Math.floor(pomoSeconds / 60);
     const s = pomoSeconds % 60;
     pomoTimeEl.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   }
 
+  function setMode(seconds, label) {
+    clearInterval(pomoInterval);
+    pomoIsRunning = false;
+    maxSeconds = seconds;
+    pomoSeconds = seconds;
+    updateDisplay();
+    btnStart.textContent = 'Démarrer';
+    btnStart.classList.add('active-pill');
+    if (pomoStatus) pomoStatus.textContent = label;
+  }
+
+  if (pomoMode25) {
+    pomoMode25.addEventListener('click', () => {
+      pomoMode25.classList.add('active');
+      if (pomoMode5) pomoMode5.classList.remove('active');
+      setMode(25 * 60, 'Session 25m');
+    });
+  }
+
+  if (pomoMode5) {
+    pomoMode5.addEventListener('click', () => {
+      pomoMode5.classList.add('active');
+      if (pomoMode25) pomoMode25.classList.remove('active');
+      setMode(5 * 60, 'Pause 5m');
+    });
+  }
+
   btnStart.addEventListener('click', () => {
     if (pomoIsRunning) {
-      // Pause
       clearInterval(pomoInterval);
       pomoIsRunning = false;
       btnStart.textContent = 'Reprendre';
       btnStart.classList.remove('active-pill');
-      pomoStatus.textContent = 'En pause';
+      if (pomoStatus) pomoStatus.textContent = 'En pause';
     } else {
-      // Start
       pomoIsRunning = true;
       btnStart.textContent = 'Pause';
       btnStart.classList.add('active-pill');
-      pomoStatus.textContent = 'En cours...';
+      if (pomoStatus) pomoStatus.textContent = 'En cours...';
 
       pomoInterval = setInterval(() => {
         if (pomoSeconds > 0) {
           pomoSeconds--;
-          updatePomoDisplay();
+          updateDisplay();
         } else {
           clearInterval(pomoInterval);
           pomoIsRunning = false;
           btnStart.textContent = 'Démarrer';
-          pomoStatus.textContent = 'Terminé ! 🎉';
+          if (pomoStatus) pomoStatus.textContent = 'Terminé ! 🎉';
           playBeep();
         }
       }, 1000);
     }
   });
 
-  btnReset.addEventListener('click', () => {
-    clearInterval(pomoInterval);
-    pomoIsRunning = false;
-    pomoSeconds = 25 * 60;
-    updatePomoDisplay();
-    btnStart.textContent = 'Démarrer';
-    btnStart.classList.add('active-pill');
-    pomoStatus.textContent = 'Session 25m';
-  });
-
-  // Quote
-  const randomQuote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
-  document.getElementById('quoteText').textContent = randomQuote.text;
-  document.getElementById('quoteAuthor').textContent = `— ${randomQuote.author}`;
+  if (btnReset) {
+    btnReset.addEventListener('click', () => {
+      clearInterval(pomoInterval);
+      pomoIsRunning = false;
+      pomoSeconds = maxSeconds;
+      updateDisplay();
+      btnStart.textContent = 'Démarrer';
+      btnStart.classList.add('active-pill');
+      if (pomoStatus) pomoStatus.textContent = maxSeconds === 25 * 60 ? 'Session 25m' : 'Pause 5m';
+    });
+  }
 }
 
-// 6. Live Weather via Open-Meteo
-function loadLiveWeather() {
-  const tempEl = document.getElementById('weatherTemp');
-  const cityEl = document.getElementById('weatherCity');
-  const iconEl = document.getElementById('weatherIcon');
+// 5.5 Zen Lo-Fi & Ambient Sound Synthesis (Pure Web Audio)
+function initZenAudio() {
+  const btnToggle = document.getElementById('btnToggleZenAudio');
+  const zenStatus = document.getElementById('zenAudioStatus');
+  const volumeSlider = document.getElementById('zenVolumeSlider');
+  const soundButtons = document.querySelectorAll('.zen-btn');
 
-  function fetchWeather(lat, lon, cityName) {
-    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`)
-      .then(r => r.json())
-      .then(d => {
-        if (d.current_weather) {
-          const temp = Math.round(d.current_weather.temperature);
-          tempEl.textContent = `${temp}°C`;
-          cityEl.textContent = cityName;
+  function startZenAudio() {
+    try {
+      if (!zenAudioCtx) {
+        zenAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (zenAudioCtx.state === 'suspended') {
+        zenAudioCtx.resume();
+      }
 
-          // Simple code to icon
-          const code = d.current_weather.weathercode;
-          if (code === 0) iconEl.textContent = '☀️';
-          else if (code <= 3) iconEl.textContent = '⛅';
-          else if (code <= 67) iconEl.textContent = '🌧️';
-          else if (code <= 77) iconEl.textContent = '❄️';
-          else iconEl.textContent = '⛈️';
-        }
-      })
-      .catch(() => {
-        tempEl.textContent = '20°C';
-      });
+      // Generate a buffer of calming colored noise
+      const bufferSize = zenAudioCtx.sampleRate * 2;
+      const noiseBuffer = zenAudioCtx.createBuffer(1, bufferSize, zenAudioCtx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      let lastOut = 0.0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        output[i] = (lastOut + 0.02 * white) / 1.02;
+        lastOut = output[i];
+        output[i] *= 3.5;
+      }
+
+      zenSourceNode = zenAudioCtx.createBufferSource();
+      zenSourceNode.buffer = noiseBuffer;
+      zenSourceNode.loop = true;
+
+      // Filter to simulate sound type
+      const filter = zenAudioCtx.createBiquadFilter();
+      if (currentZenSound === 'sakura') {
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(450, zenAudioCtx.currentTime);
+      } else if (currentZenSound === 'rain') {
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(900, zenAudioCtx.currentTime);
+        filter.Q.setValueAtTime(1.2, zenAudioCtx.currentTime);
+      } else {
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(250, zenAudioCtx.currentTime);
+      }
+
+      zenGainNode = zenAudioCtx.createGain();
+      const vol = volumeSlider ? volumeSlider.value / 100 : 0.4;
+      zenGainNode.gain.setValueAtTime(vol * 0.15, zenAudioCtx.currentTime);
+
+      zenSourceNode.connect(filter);
+      filter.connect(zenGainNode);
+      zenGainNode.connect(zenAudioCtx.destination);
+      zenSourceNode.start();
+
+      isZenPlaying = true;
+      if (btnToggle) btnToggle.textContent = '⏸ Pause';
+      if (zenStatus) zenStatus.textContent = 'En lecture';
+    } catch {}
   }
 
-  // Geolocation or Paris fallback
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => fetchWeather(pos.coords.latitude, pos.coords.longitude, 'Local'),
-      () => fetchWeather(48.8566, 2.3522, 'Paris')
-    );
-  } else {
-    fetchWeather(48.8566, 2.3522, 'Paris');
+  function stopZenAudio() {
+    if (zenSourceNode) {
+      try { zenSourceNode.stop(); } catch {}
+      zenSourceNode.disconnect();
+      zenSourceNode = null;
+    }
+    isZenPlaying = false;
+    if (btnToggle) btnToggle.textContent = '▶ Écouter';
+    if (zenStatus) zenStatus.textContent = 'Arrêté';
+  }
+
+  if (btnToggle) {
+    btnToggle.addEventListener('click', () => {
+      if (isZenPlaying) stopZenAudio();
+      else startZenAudio();
+    });
+  }
+
+  soundButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      soundButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentZenSound = btn.dataset.sound;
+      if (isZenPlaying) {
+        stopZenAudio();
+        startZenAudio();
+      }
+    });
+  });
+
+  if (volumeSlider) {
+    volumeSlider.addEventListener('input', () => {
+      if (zenGainNode && zenAudioCtx) {
+        zenGainNode.gain.setValueAtTime((volumeSlider.value / 100) * 0.15, zenAudioCtx.currentTime);
+      }
+    });
+  }
+}
+
+// 5.6 Quotes Controller
+function initQuotes() {
+  const quoteText = document.getElementById('quoteText');
+  const quoteAuthor = document.getElementById('quoteAuthor');
+  const btnNewQuote = document.getElementById('btnNewQuote');
+
+  function nextQuote() {
+    const q = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+    if (quoteText) quoteText.textContent = q.text;
+    if (quoteAuthor) quoteAuthor.textContent = `— ${q.author}`;
+  }
+
+  if (btnNewQuote) {
+    btnNewQuote.addEventListener('click', nextQuote);
   }
 }
 
@@ -615,7 +978,7 @@ function initCaustics() {
 
 // 9. Load Saved Preferences
 function loadSavedPreferences() {
-  storage.get(['meh_search_engine', 'meh_wallpaper', 'meh_custom_wp_url', 'meh_glass_blur', 'meh_widgets_visible'], (res) => {
+  storage.get(['meh_search_engine', 'meh_wallpaper', 'meh_custom_wp_url', 'meh_glass_blur', 'meh_widgets_visible', 'meh_widget_position'], (res) => {
     if (res.meh_search_engine) {
       const event = new CustomEvent('changeEngine', { detail: res.meh_search_engine });
       const item = document.querySelector(`.menu-item[data-engine="${res.meh_search_engine}"]`);
@@ -635,8 +998,30 @@ function loadSavedPreferences() {
       document.documentElement.style.setProperty('--glass-blur', `${res.meh_glass_blur}px`);
     }
 
-    if (res.meh_widgets_visible === false) {
-      document.getElementById('widgetsDock').classList.add('hidden');
+    if (res.meh_widget_position) {
+      currentDockPosition = res.meh_widget_position;
+    }
+    if (res.meh_widgets_visible !== undefined) {
+      isDockVisible = res.meh_widgets_visible;
+    }
+
+    const appLayout = document.querySelector('.app-layout');
+    if (appLayout) {
+      appLayout.classList.remove('dock-left', 'dock-right', 'dock-hidden');
+      document.body.classList.remove('dock-left', 'dock-right', 'dock-hidden');
+      if (!isDockVisible) {
+        appLayout.classList.add('dock-hidden');
+        document.body.classList.add('dock-hidden');
+      } else {
+        appLayout.classList.add(currentDockPosition === 'left' ? 'dock-left' : 'dock-right');
+        document.body.classList.add(currentDockPosition === 'left' ? 'dock-left' : 'dock-right');
+      }
+      const btnDockLeft = document.getElementById('btnDockLeft');
+      const btnDockRight = document.getElementById('btnDockRight');
+      const lblDockSide = document.getElementById('lblDockSide');
+      if (btnDockLeft) btnDockLeft.classList.toggle('active', isDockVisible && currentDockPosition === 'left');
+      if (btnDockRight) btnDockRight.classList.toggle('active', isDockVisible && currentDockPosition === 'right');
+      if (lblDockSide) lblDockSide.textContent = currentDockPosition === 'right' ? 'Droite' : 'Gauche';
     }
   });
 }

@@ -21,6 +21,9 @@ import {
   Check,
   X,
   Compass,
+  Play,
+  Pause,
+  RotateCcw,
 } from 'lucide-react';
 
 interface NewTabPageProps {
@@ -56,14 +59,94 @@ export const NewTabPage: React.FC<NewTabPageProps> = ({
       '✨ Bienvenue sur MEH Browser.\nProfitez d’une navigation fluide, respectueuse de vos données et 100% personnalisable.'
     );
   });
-  const [showNotesWidget, setShowNotesWidget] = useState(true);
-  const [showWeatherWidget, setShowWeatherWidget] = useState(true);
+  const [dockPosition, setDockPosition] = useState<'right' | 'left'>(() => {
+    return (localStorage.getItem('meh_widget_position') as 'right' | 'left') || 'right';
+  });
+  const [showWidgets, setShowWidgets] = useState<boolean>(() => {
+    return localStorage.getItem('meh_widgets_visible') !== 'false';
+  });
+  const [selectedCity, setSelectedCity] = useState('Paris');
+  const [cityTemp, setCityTemp] = useState('19°C');
+  const [cityCondition, setCityCondition] = useState('Éclaircies douces');
+  const [todoTasks, setTodoTasks] = useState<Array<{ id: string; text: string; done: boolean }>>(() => {
+    try {
+      const saved = localStorage.getItem('meh_todo_tasks');
+      return saved ? JSON.parse(saved) : [
+        { id: '1', text: 'Profiter du design Liquid Glass 🌸', done: true },
+        { id: '2', text: 'Découvrir les widgets personnalisables', done: false },
+      ];
+    } catch {
+      return [];
+    }
+  });
+  const [newTodoInput, setNewTodoInput] = useState('');
+  const [pomoSeconds, setPomoSeconds] = useState(25 * 60);
+  const [pomoRunning, setPomoRunning] = useState(false);
 
   // Live Clock update
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Pomodoro countdown timer
+  useEffect(() => {
+    let timer: any;
+    if (pomoRunning && pomoSeconds > 0) {
+      timer = setInterval(() => setPomoSeconds(s => s - 1), 1000);
+    } else if (pomoSeconds === 0) {
+      setPomoRunning(false);
+    }
+    return () => clearInterval(timer);
+  }, [pomoRunning, pomoSeconds]);
+
+  const handleDockPositionChange = (pos: 'right' | 'left') => {
+    setDockPosition(pos);
+    setShowWidgets(true);
+    localStorage.setItem('meh_widget_position', pos);
+    localStorage.setItem('meh_widgets_visible', 'true');
+  };
+
+  const handleToggleWidgets = () => {
+    setShowWidgets(prev => {
+      const next = !prev;
+      localStorage.setItem('meh_widgets_visible', String(next));
+      return next;
+    });
+  };
+
+  const handleCitySelect = (city: string, temp: string, cond: string) => {
+    setSelectedCity(city);
+    setCityTemp(temp);
+    setCityCondition(cond);
+  };
+
+  const handleToggleTodo = (id: string) => {
+    const updated = todoTasks.map(t => t.id === id ? { ...t, done: !t.done } : t);
+    setTodoTasks(updated);
+    localStorage.setItem('meh_todo_tasks', JSON.stringify(updated));
+  };
+
+  const handleAddTodo = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTodoInput.trim()) return;
+    const updated = [{ id: String(Date.now()), text: newTodoInput.trim(), done: false }, ...todoTasks];
+    setTodoTasks(updated);
+    setNewTodoInput('');
+    localStorage.setItem('meh_todo_tasks', JSON.stringify(updated));
+  };
+
+  const handleDeleteTodo = (id: string) => {
+    const updated = todoTasks.filter(t => t.id !== id);
+    setTodoTasks(updated);
+    localStorage.setItem('meh_todo_tasks', JSON.stringify(updated));
+  };
+
+  const handleClearDoneTodos = () => {
+    const updated = todoTasks.filter(t => !t.done);
+    setTodoTasks(updated);
+    localStorage.setItem('meh_todo_tasks', JSON.stringify(updated));
+  };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,49 +199,65 @@ export const NewTabPage: React.FC<NewTabPageProps> = ({
   return (
     <div className="relative min-h-full w-full flex flex-col items-center justify-between p-4 sm:p-8 select-none overflow-y-auto no-scrollbar">
       {/* Top Bar Floating Greeting / Widgets Toggle */}
-      <div className="w-full max-w-5xl flex items-center justify-between z-10 pt-2 mb-6">
+      <div className="w-full max-w-6xl flex items-center justify-between z-10 pt-2 mb-4">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full liquid-glass text-xs text-white/80">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-medium">Navigation sécurisée</span>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full liquid-glass text-xs text-white/90">
+            <span className="w-2 h-2 rounded-full bg-pink-400 animate-pulse" />
+            <span className="font-medium">MEH Liquid Glass Engine</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowWeatherWidget(!showWeatherWidget)}
-            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-              showWeatherWidget
-                ? 'liquid-glass text-white'
-                : 'text-white/50 hover:text-white hover:bg-white/10'
-            }`}
-          >
-            <CloudSun className="w-3.5 h-3.5 inline mr-1.5" />
-            Météo
-          </button>
-          <button
-            onClick={() => setShowNotesWidget(!showNotesWidget)}
-            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-              showNotesWidget
-                ? 'liquid-glass text-white'
-                : 'text-white/50 hover:text-white hover:bg-white/10'
-            }`}
-          >
-            <FileText className="w-3.5 h-3.5 inline mr-1.5" />
-            Notes
-          </button>
+        <div className="flex items-center gap-2.5">
+          {/* Dock Position & Visibility Segmented Control */}
+          <div className="flex items-center p-1 rounded-full liquid-glass gap-1">
+            <button
+              type="button"
+              onClick={() => handleDockPositionChange('left')}
+              className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all ${
+                dockPosition === 'left' && showWidgets ? 'bg-white/30 text-white shadow-sm' : 'text-white/60 hover:text-white'
+              }`}
+              title="Placer les widgets à gauche"
+            >
+              ◧ Gauche
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDockPositionChange('right')}
+              className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all ${
+                dockPosition === 'right' && showWidgets ? 'bg-white/30 text-white shadow-sm' : 'text-white/60 hover:text-white'
+              }`}
+              title="Placer les widgets à droite"
+            >
+              Droite ◨
+            </button>
+            <button
+              type="button"
+              onClick={handleToggleWidgets}
+              className={`p-1 rounded-full text-xs transition-colors ${showWidgets ? 'text-white bg-white/20' : 'text-white/60 hover:text-white'}`}
+              title="Afficher/masquer les widgets"
+            >
+              <Layers className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
           <button
             onClick={onOpenCustomize}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl liquid-glass hover:bg-white/20 text-xs font-medium text-sky-300 transition-all border border-sky-400/30"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl liquid-glass hover:bg-white/20 text-xs font-medium text-pink-300 transition-all border border-pink-400/30"
           >
             <Palette className="w-3.5 h-3.5" />
-            <span>Personnaliser</span>
+            <span>Apparence</span>
           </button>
         </div>
       </div>
 
-      {/* Main Center Section: Logo, Clock & Big Search */}
-      <div className="w-full max-w-3xl flex flex-col items-center my-auto z-10 py-6">
+      {/* Main Center Section: Logo, Clock & Big Search (Smoothly shifts when dock is on left or right!) */}
+      <div
+        className={`w-full max-w-3xl flex flex-col items-center my-auto z-10 py-4 transition-transform duration-500 ease-out ${
+          showWidgets
+            ? (dockPosition === 'right' ? 'lg:-translate-x-36' : 'lg:translate-x-36')
+            : 'translate-x-0'
+        }`}
+      >
         {/* MEH Browser Brand & Liquid Insignia */}
         <div className="flex flex-col items-center mb-6">
           <div className="relative mb-3 group">
@@ -362,37 +461,153 @@ export const NewTabPage: React.FC<NewTabPageProps> = ({
         </div>
       </div>
 
-      {/* Floating Glass Widgets (Bottom Strip) */}
-      <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-4 z-10 pb-4">
-        {/* Weather Widget */}
-        {showWeatherWidget && (
-          <div className="p-4 rounded-2xl liquid-glass flex items-center justify-between border border-white/10">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-sky-500/20 border border-sky-400/30 flex items-center justify-center text-sky-300">
-                <CloudSun className="w-7 h-7" />
-              </div>
-              <div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold text-white">19°C</span>
-                  <span className="text-xs text-white/70">Éclaircies douces</span>
-                </div>
-                <div className="text-xs text-white/50">Paris, France · Humidité 54%</div>
-              </div>
+      {/* Floating Liquid Glass Widgets Dock (Dockable Left or Right) */}
+      <aside
+        className={`fixed top-20 bottom-8 w-80 z-20 transition-all duration-500 ease-out flex flex-col liquid-glass-card rounded-3xl p-4 overflow-hidden border border-white/40 shadow-2xl ${
+          dockPosition === 'right' ? 'right-6' : 'left-6'
+        } ${
+          showWidgets
+            ? 'opacity-100 scale-100 pointer-events-auto'
+            : 'opacity-0 scale-95 pointer-events-none'
+        }`}
+      >
+        {/* Dock Header */}
+        <div className="flex items-center justify-between pb-3 border-b border-white/15 mb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-sm">✨</span>
+            <span className="text-xs font-bold text-white">Liquid Glass Widgets</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => handleDockPositionChange(dockPosition === 'right' ? 'left' : 'right')}
+              className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-white/15 hover:bg-white/25 text-white/90 border border-white/20 transition-all"
+              title="Basculer gauche/droite"
+            >
+              ⇄ {dockPosition === 'right' ? 'Droite' : 'Gauche'}
+            </button>
+            <button
+              type="button"
+              onClick={handleToggleWidgets}
+              className="text-xs w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/70 hover:text-white"
+              title="Masquer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto space-y-3 pr-1 no-scrollbar">
+          {/* Widget 1: Live Weather */}
+          <div className="p-3.5 rounded-2xl liquid-glass border border-white/25">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                <CloudSun className="w-3.5 h-3.5 text-pink-300" />
+                <span>Météo Live</span>
+              </span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/15 text-white/80 font-medium">
+                {selectedCity}
+              </span>
             </div>
-            <div className="text-right text-xs text-white/60 font-mono">
-              <div>Vent: 12 km/h</div>
-              <div>Qualité: Bonne</div>
+            <div className="flex items-center justify-between mb-2.5">
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-black text-white">{cityTemp}</span>
+                <span className="text-xs text-white/80">{cityCondition}</span>
+              </div>
+              <span className="text-xs text-white/60 font-mono">Vent 12 km/h</span>
+            </div>
+            <div className="flex gap-1 overflow-x-auto pb-1 no-scrollbar">
+              {[
+                { name: 'Paris', temp: '19°C', cond: 'Éclaircies' },
+                { name: 'Marseille', temp: '22°C', cond: 'Ensoleillé' },
+                { name: 'Lyon', temp: '20°C', cond: 'Doux' },
+                { name: 'Tokyo', temp: '21°C', cond: 'Sakura' },
+                { name: 'Montréal', temp: '16°C', cond: 'Nuageux' },
+              ].map(c => (
+                <button
+                  key={c.name}
+                  type="button"
+                  onClick={() => handleCitySelect(c.name, c.temp, c.cond)}
+                  className={`text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap transition-all ${
+                    selectedCity === c.name
+                      ? 'bg-white/30 text-white border border-white/40'
+                      : 'bg-white/10 text-white/70 hover:text-white'
+                  }`}
+                >
+                  {c.name}
+                </button>
+              ))}
             </div>
           </div>
-        )}
 
-        {/* Quick Notes Widget */}
-        {showNotesWidget && (
-          <div className="p-4 rounded-2xl liquid-glass flex flex-col justify-between border border-white/10">
+          {/* Widget 2: Interactive To-Do List */}
+          <div className="p-3.5 rounded-2xl liquid-glass border border-white/25">
             <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-white/80">
-                <FileText className="w-3.5 h-3.5 text-sky-400" />
-                <span>Bloc-notes instantané</span>
+              <span className="text-xs font-bold text-white">✅ Tâches du Jour</span>
+              <span className="text-[10px] text-white/70 font-mono">
+                {todoTasks.filter(t => !t.done).length} restante(s)
+              </span>
+            </div>
+            <form onSubmit={handleAddTodo} className="flex gap-1.5 mb-2">
+              <input
+                type="text"
+                value={newTodoInput}
+                onChange={e => setNewTodoInput(e.target.value)}
+                placeholder="Ajouter une tâche... (Entrée)"
+                className="flex-1 bg-white/10 border border-white/20 rounded-xl px-2.5 py-1 text-xs text-white placeholder-white/40 focus:outline-none focus:border-white/50"
+              />
+              <button
+                type="submit"
+                className="px-2.5 py-1 rounded-xl text-xs font-bold text-slate-900 bg-pink-300 hover:brightness-110 active:scale-95 transition-all"
+              >
+                +
+              </button>
+            </form>
+            <div className="space-y-1.5 max-h-28 overflow-y-auto no-scrollbar">
+              {todoTasks.map(t => (
+                <div
+                  key={t.id}
+                  className="flex items-center gap-2 p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-xs text-white"
+                >
+                  <input
+                    type="checkbox"
+                    checked={t.done}
+                    onChange={() => handleToggleTodo(t.id)}
+                    className="accent-pink-400 cursor-pointer"
+                  />
+                  <span className={`flex-1 truncate ${t.done ? 'line-through opacity-50' : ''}`}>
+                    {t.text}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteTodo(t.id)}
+                    className="text-white/40 hover:text-red-400 text-xs px-1"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+            {todoTasks.some(t => t.done) && (
+              <div className="flex justify-end mt-1.5">
+                <button
+                  type="button"
+                  onClick={handleClearDoneTodos}
+                  className="text-[10px] text-white/50 hover:text-white underline"
+                >
+                  Effacer terminées
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Widget 3: Quick Scratchpad Note */}
+          <div className="p-3.5 rounded-2xl liquid-glass border border-white/25">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-white">
+                <FileText className="w-3.5 h-3.5 text-pink-300" />
+                <span>Bloc-Notes</span>
               </div>
               <span className="text-[10px] text-white/40">Auto-sauvegardé</span>
             </div>
@@ -401,11 +616,51 @@ export const NewTabPage: React.FC<NewTabPageProps> = ({
               onChange={(e) => handleNoteChange(e.target.value)}
               placeholder="Écrivez une note rapide, une idée ou un pense-bête..."
               rows={2}
-              className="w-full bg-white/5 rounded-xl p-2 text-xs text-white/90 placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-sky-400/50 resize-none"
+              className="w-full bg-white/10 rounded-xl p-2 text-xs text-white placeholder-white/40 focus:outline-none focus:ring-1 focus:ring-pink-400/50 resize-none border border-white/15"
             />
           </div>
-        )}
-      </div>
+
+          {/* Widget 4: Pomodoro Focus */}
+          <div className="p-3.5 rounded-2xl liquid-glass border border-white/25">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-pink-300" />
+                <span>Minuteur Focus</span>
+              </span>
+              <span className="text-[10px] text-pink-300 font-semibold">
+                {pomoRunning ? 'En cours...' : 'Prêt'}
+              </span>
+            </div>
+            <div className="flex items-center justify-between pt-1">
+              <div className="text-xl font-black font-mono text-white tracking-wider">
+                {String(Math.floor(pomoSeconds / 60)).padStart(2, '0')}:
+                {String(pomoSeconds % 60).padStart(2, '0')}
+              </div>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setPomoRunning(!pomoRunning)}
+                  className="px-2.5 py-1 rounded-xl text-xs font-bold bg-pink-400 text-slate-900 hover:brightness-110 active:scale-95 transition-all flex items-center gap-1"
+                >
+                  {pomoRunning ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+                  <span>{pomoRunning ? 'Pause' : 'Start'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPomoRunning(false);
+                    setPomoSeconds(25 * 60);
+                  }}
+                  className="p-1 rounded-xl bg-white/10 hover:bg-white/20 text-white/70 hover:text-white"
+                  title="Réinitialiser"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
 
       {/* Add Shortcut Modal */}
       {isAddModalOpen && (
