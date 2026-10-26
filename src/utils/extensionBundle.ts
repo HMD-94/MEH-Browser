@@ -188,10 +188,9 @@ Félicitations ! Vous venez d'obtenir l'extension officielle MEH Browser.
 
 ---
 
-## ✨ NOUVEAUTÉ : RECHERCHE GOOGLE EN LIQUID GLASS & WIDGETS
-- 🌸 Le fond d'écran 4K Sakura Bloom et les effets Liquid Glass restent désormais actifs sur les pages de recherche Google (google.com, google.fr, etc.) !
-- 🎛️ Un dock de widgets interactifs (Météo, Pomodoro, Bloc-notes, Raccourcis) est disponible directement sur la recherche Google, déplaçable à gauche ou à droite.
-- 💨 Les résultats de recherche s'adaptent et se décalent pour une lisibilité parfaite.
+## ✨ FOND D'ÉCRAN SAKURA SUR LA RECHERCHE GOOGLE
+- 🌸 **Fond d'écran Sakura HD** : S'affiche automatiquement en arrière-plan de Google Search (google.fr, google.com, etc.).
+- 🔍 **Google Search reste 100% normal** : Votre recherche Chrome habituelle reste exactement la même, simple et fluide, avec votre fond d'écran Sakura en arrière-plan au lieu d'un fond noir/gris terne !
 
 ---
 
@@ -204,7 +203,7 @@ Félicitations ! Vous venez d'obtenir l'extension officielle MEH Browser.
 4. En haut à gauche, cliquez sur « Charger l'extension non empaquetée » (ou sur l'icône de rechargement ↻ si vous l'aviez déjà chargée).
 5. ⚠️ IMPORTANT : Sélectionnez bien le dossier qui contient directement le fichier "manifest.json" !
 
-🎉 MEH Browser se lance désormais AUTOMATIQUEMENT au démarrage de Google Chrome, sur chaque nouvel onglet (Ctrl + T) et lors de vos recherches Google !
+🎉 MEH Browser se lance désormais AUTOMATIQUEMENT au démarrage de Google Chrome, sur chaque nouvel onglet (Ctrl + T) et avec votre fond d'écran Sakura sur Google Search !
 
 💡 Conseil : Dans chrome://settings/onStartup, choisissez « Ouvrir la page Nouvel onglet » pour une ouverture instantanée.
 `;

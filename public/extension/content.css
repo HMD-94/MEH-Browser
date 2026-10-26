@@ -1,15 +1,15 @@
 /* ==========================================================================
-   MEH BROWSER - LIQUID GLASS & SAKURA THEME ENGINE FOR GOOGLE SEARCH
-   Injects high-definition Sakura wallpaper, frosted glass cards & interactive widgets
+   MEH BROWSER - FOND D'ÉCRAN SAKURA SUR LA RECHERCHE GOOGLE
+   Recherche Google 100% normale, avec UNIQUEMENT le fond d'écran Sakura
    ========================================================================== */
 
-/* 1. ROOT & BODY TRANSPARENCY */
-html, body {
+/* 1. Transparence de la page globale pour laisser apparaître le fond d'écran */
+html,
+body {
   background-color: transparent !important;
-  color: #f1f5f9 !important;
 }
 
-/* Background Wallpaper Container */
+/* 2. Fond d'écran fixé en arrière-plan */
 #meh-wallpaper-backdrop {
   position: fixed !important;
   inset: 0 !important;
@@ -21,9 +21,9 @@ html, body {
   background-position: center center !important;
   background-repeat: no-repeat !important;
   background-attachment: fixed !important;
-  transition: opacity 0.4s ease, filter 0.4s ease !important;
 }
 
+/* 3. Voile d'ombrage doux pour préserver le contraste normal de Google */
 #meh-wallpaper-overlay {
   position: fixed !important;
   inset: 0 !important;
@@ -31,526 +31,30 @@ html, body {
   height: 100vh !important;
   z-index: -999998 !important;
   pointer-events: none !important;
-  background: radial-gradient(circle at 50% 15%, rgba(13, 18, 36, 0.45) 0%, rgba(6, 9, 20, 0.85) 100%) !important;
-  backdrop-filter: blur(6px) !important;
-  -webkit-backdrop-filter: blur(6px) !important;
+  background: radial-gradient(circle at 50% 15%, rgba(13, 18, 36, 0.40) 0%, rgba(6, 9, 20, 0.75) 100%) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
 }
 
-#meh-petals-canvas {
-  position: fixed !important;
-  inset: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  z-index: -999997 !important;
-  pointer-events: none !important;
-}
-
-/* 2. NEUTRALIZE OPAQUE GOOGLE BACKGROUNDS */
+/* 4. Rendre transparents les conteneurs pleins pour révéler le fond, sans toucher à la mise en page Google */
 #main,
 #cnt,
 #rcnt,
 #center_col,
 #rhs,
 #appbar,
-#searchform,
 .appbar,
-#hdtb,
 .sfbg,
 .minidiv,
-.srg,
-div#rso,
+.minidiv .sfbg,
+header,
 .bkEvor,
 .mw,
 .GyAeWb,
 .k820Tk,
 .M8OgIe,
-.RNNXgb,
-.minidiv .sfbg,
-header,
-.tsf,
-.fbar,
 #footcnt,
-#botstuff,
-.g,
-.ULSxyf {
+.fbar {
   background: transparent !important;
   background-color: transparent !important;
-}
-
-/* 3. GOOGLE HEADER & SEARCH BAR LIQUID GLASS */
-#searchform {
-  position: sticky !important;
-  top: 0 !important;
-  z-index: 100 !important;
-  background: rgba(10, 15, 30, 0.72) !important;
-  backdrop-filter: blur(24px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35) !important;
-  transition: all 0.3s ease !important;
-}
-
-/* Search input capsule */
-.RNNXgb,
-form[role="search"] .RNNXgb,
-.A8SBwf .RNNXgb {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border: 1px solid rgba(255, 255, 255, 0.22) !important;
-  border-radius: 9999px !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.15) !important;
-  backdrop-filter: blur(12px) !important;
-  transition: all 0.25s ease !important;
-}
-
-.RNNXgb:hover,
-.RNNXgb:focus-within {
-  background: rgba(255, 255, 255, 0.14) !important;
-  border-color: rgba(244, 114, 182, 0.55) !important;
-  box-shadow: 0 6px 28px rgba(244, 114, 182, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.25) !important;
-}
-
-.RNNXgb input,
-.RNNXgb textarea,
-.gLFyf {
-  color: #ffffff !important;
-  font-weight: 500 !important;
-}
-
-/* Google Logo Glow */
-.logo img,
-.logo svg,
-#logo img {
-  filter: drop-shadow(0 0 12px rgba(244, 114, 182, 0.6)) !important;
-}
-
-/* Navigation tabs (All, Images, Videos, News, etc.) */
-#hdtb-msb,
-.hdtb-mitem,
-.crJ18e,
-.hdtb-mitem a,
-.GKGgdd a {
-  color: rgba(255, 255, 255, 0.8) !important;
-  font-weight: 600 !important;
-}
-
-.hdtb-mitem.hdtb-msel,
-.crJ18e .NZmxZe {
-  color: #f472b6 !important;
-  border-bottom: 2px solid #f472b6 !important;
-  text-shadow: 0 0 10px rgba(244, 114, 182, 0.5) !important;
-}
-
-/* 4. SEARCH RESULTS LIQUID GLASS CARDS */
-.g,
-.MjjYud > div:not(.ULSxyf):not(.srg),
-.hlcw0c,
-.kp-blk,
-div[data-sokoban-container],
-.Ww4FFb,
-.g-blk {
-  background: rgba(15, 23, 42, 0.68) !important;
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  border-radius: 20px !important;
-  padding: 18px 22px !important;
-  margin-bottom: 18px !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease !important;
-}
-
-.g:hover,
-.MjjYud > div:hover,
-.kp-blk:hover {
-  border-color: rgba(244, 114, 182, 0.35) !important;
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45), 0 0 25px rgba(244, 114, 182, 0.15) !important;
-  transform: translateY(-2px) !important;
-}
-
-/* Titles & Links */
-h3,
-.LC20lb,
-.DKV0Md,
-a h3 {
-  color: #ffffff !important;
-  font-weight: 700 !important;
-  font-size: 19px !important;
-  letter-spacing: -0.01em !important;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4) !important;
-}
-
-a:hover h3,
-.LC20lb:hover {
-  color: #93c5fd !important;
-  text-decoration: underline !important;
-}
-
-/* Snippets / Descriptions */
-.VwiC3b,
-.yXK7lf,
-.MUxGbd,
-.s3v9rd {
-  color: rgba(241, 245, 249, 0.92) !important;
-  font-size: 14.5px !important;
-  line-height: 1.62 !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35) !important;
-}
-
-/* Breadcrumbs & URLs */
-.VuuXrf,
-.byrV5b,
-cite {
-  color: #f472b6 !important;
-  font-weight: 600 !important;
-  text-shadow: 0 0 8px rgba(244, 114, 182, 0.3) !important;
-}
-
-/* Right-Hand Knowledge Panel */
-#rhs,
-.rhsg4 {
-  background: transparent !important;
-}
-
-#rhs .kp-blk {
-  background: rgba(15, 23, 42, 0.75) !important;
-  backdrop-filter: blur(24px) !important;
-  -webkit-backdrop-filter: blur(24px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.16) !important;
-  border-radius: 22px !important;
-}
-
-/* Knowledge Panel Text */
-#rhs * {
-  color: #e2e8f0 !important;
-}
-#rhs h2, #rhs h3, #rhs .kno-ecr-pt {
-  color: #ffffff !important;
-}
-
-/* "People Also Ask" Accordions */
-.related-question-pair,
-.Wt5Tfe {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-}
-
-/* 5. FLOATING TOP PILL (MEH BROWSER QUICK BAR) */
-#meh-floating-topbar {
-  position: fixed !important;
-  top: 14px !important;
-  right: 20px !important;
-  z-index: 9999999 !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 8px !important;
-  padding: 6px 12px !important;
-  background: rgba(13, 18, 36, 0.78) !important;
-  backdrop-filter: blur(24px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
-  border-radius: 9999px !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-  transition: all 0.25s ease !important;
-}
-
-#meh-floating-topbar:hover {
-  background: rgba(15, 23, 42, 0.9) !important;
-  border-color: rgba(244, 114, 182, 0.45) !important;
-  box-shadow: 0 12px 35px rgba(244, 114, 182, 0.2), 0 8px 24px rgba(0,0,0,0.5) !important;
-}
-
-.meh-top-btn {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  padding: 6px 12px !important;
-  border-radius: 9999px !important;
-  font-size: 12px !important;
-  font-weight: 600 !important;
-  color: #ffffff !important;
-  background: rgba(255, 255, 255, 0.1) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  cursor: pointer !important;
-  text-decoration: none !important;
-  transition: all 0.2s ease !important;
-}
-
-.meh-top-btn:hover {
-  background: rgba(255, 255, 255, 0.2) !important;
-  border-color: rgba(244, 114, 182, 0.5) !important;
-  transform: scale(1.04) !important;
-}
-
-.meh-top-btn.primary {
-  background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%) !important;
-  border-color: rgba(255, 255, 255, 0.3) !important;
-  box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4) !important;
-}
-
-/* 6. FLOATING LIQUID GLASS WIDGET DOCK ON SEARCH PAGE */
-#meh-search-dock {
-  position: fixed !important;
-  top: 70px !important;
-  bottom: 20px !important;
-  width: 350px !important;
-  z-index: 999999 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  background: rgba(12, 16, 32, 0.82) !important;
-  backdrop-filter: blur(28px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.16) !important;
-  border-radius: 24px !important;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
-  overflow: hidden !important;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease !important;
-}
-
-/* Left / Right Position */
-#meh-search-dock.dock-left {
-  left: 20px !important;
-  right: auto !important;
-}
-
-#meh-search-dock.dock-right {
-  right: 20px !important;
-  left: auto !important;
-}
-
-#meh-search-dock.collapsed {
-  transform: translateX(115%) !important;
-  pointer-events: none !important;
-  opacity: 0 !important;
-}
-
-#meh-search-dock.dock-left.collapsed {
-  transform: translateX(-115%) !important;
-}
-
-/* Dynamic Shift of Search Results When Dock is Open */
-body.meh-dock-open-right #center_col,
-body.meh-dock-open-right #rcnt {
-  margin-right: 360px !important;
-  transition: margin 0.3s ease !important;
-}
-
-body.meh-dock-open-left #center_col,
-body.meh-dock-open-left #rcnt {
-  margin-left: 360px !important;
-  transition: margin 0.3s ease !important;
-}
-
-/* Dock Header */
-.meh-dock-head {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  padding: 14px 18px !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-  background: rgba(255, 255, 255, 0.03) !important;
-}
-
-.meh-dock-title {
-  display: flex !important;
-  align-items: center !important;
-  gap: 8px !important;
-  font-size: 14px !important;
-  font-weight: 700 !important;
-  color: #ffffff !important;
-}
-
-.meh-dock-title span {
-  background: linear-gradient(135deg, #f472b6, #38bdf8) !important;
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-}
-
-.meh-dock-ctrls {
-  display: flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-}
-
-.meh-dock-icon-btn {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  color: #ffffff !important;
-  padding: 4px 9px !important;
-  border-radius: 9999px !important;
-  font-size: 11px !important;
-  font-weight: 600 !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-}
-
-.meh-dock-icon-btn:hover {
-  background: rgba(255, 255, 255, 0.22) !important;
-  border-color: rgba(244, 114, 182, 0.45) !important;
-}
-
-/* Dock Body & Scroll */
-.meh-dock-scroll {
-  flex: 1 !important;
-  overflow-y: auto !important;
-  padding: 14px 16px !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 14px !important;
-}
-
-.meh-dock-scroll::-webkit-scrollbar {
-  width: 5px !important;
-}
-.meh-dock-scroll::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2) !important;
-  border-radius: 9999px !important;
-}
-
-/* Widget Cards inside Dock */
-.meh-w-card {
-  background: rgba(255, 255, 255, 0.06) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-radius: 18px !important;
-  padding: 14px 16px !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
-}
-
-.meh-w-card:hover {
-  border-color: rgba(255, 255, 255, 0.2) !important;
-}
-
-.meh-w-top {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  margin-bottom: 10px !important;
-}
-
-.meh-w-name {
-  font-size: 12px !important;
-  font-weight: 700 !important;
-  color: #e2e8f0 !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-}
-
-.meh-w-badge {
-  font-size: 10px !important;
-  font-weight: 600 !important;
-  padding: 2px 7px !important;
-  border-radius: 9999px !important;
-  background: rgba(244, 114, 182, 0.2) !important;
-  color: #f472b6 !important;
-  border: 1px solid rgba(244, 114, 182, 0.3) !important;
-}
-
-/* Time & Clock Widget */
-.meh-w-clock {
-  font-size: 26px !important;
-  font-weight: 800 !important;
-  color: #ffffff !important;
-  font-variant-numeric: tabular-nums !important;
-  letter-spacing: 0.5px !important;
-  text-shadow: 0 0 20px rgba(56, 189, 248, 0.3) !important;
-}
-
-.meh-w-date {
-  font-size: 11px !important;
-  color: #94a3b8 !important;
-  margin-top: 2px !important;
-}
-
-/* Weather Widget */
-.meh-w-weather-row {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-}
-.meh-w-weather-temp {
-  font-size: 22px !important;
-  font-weight: 800 !important;
-  color: #ffffff !important;
-}
-.meh-w-weather-desc {
-  font-size: 11px !important;
-  color: #94a3b8 !important;
-}
-
-/* Pomodoro Widget */
-.meh-pomo-box {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-}
-.meh-pomo-digits {
-  font-size: 22px !important;
-  font-weight: 800 !important;
-  color: #f472b6 !important;
-  font-variant-numeric: tabular-nums !important;
-}
-.meh-pomo-btn {
-  padding: 5px 12px !important;
-  border-radius: 9999px !important;
-  background: rgba(244, 114, 182, 0.2) !important;
-  border: 1px solid rgba(244, 114, 182, 0.4) !important;
-  color: #ffffff !important;
-  font-size: 11px !important;
-  font-weight: 700 !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-}
-.meh-pomo-btn:hover {
-  background: #f472b6 !important;
-}
-
-/* Quick Notes Widget */
-.meh-note-area {
-  width: 100% !important;
-  box-sizing: border-box !important;
-  height: 75px !important;
-  background: rgba(0, 0, 0, 0.25) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  border-radius: 12px !important;
-  padding: 8px 10px !important;
-  color: #ffffff !important;
-  font-size: 11px !important;
-  line-height: 1.4 !important;
-  resize: none !important;
-  font-family: inherit !important;
-}
-.meh-note-area:focus {
-  outline: none !important;
-  border-color: rgba(244, 114, 182, 0.5) !important;
-}
-
-/* Speed Dial Chips */
-.meh-shortcuts-strip {
-  display: grid !important;
-  grid-template-columns: repeat(4, 1fr) !important;
-  gap: 8px !important;
-}
-.meh-sc-chip {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  gap: 4px !important;
-  padding: 8px 4px !important;
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-radius: 12px !important;
-  color: #e2e8f0 !important;
-  font-size: 10px !important;
-  font-weight: 600 !important;
-  text-decoration: none !important;
-  transition: all 0.2s ease !important;
-}
-.meh-sc-chip:hover {
-  background: rgba(255, 255, 255, 0.15) !important;
-  border-color: rgba(244, 114, 182, 0.4) !important;
-  transform: translateY(-2px) !important;
-  color: #ffffff !important;
 }

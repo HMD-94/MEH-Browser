@@ -107,7 +107,7 @@ export const ChromeExtensionModal: React.FC<ChromeExtensionModalProps> = ({
                 Votre Chrome classique devient un navigateur d'exception
               </h3>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Nouvel onglet spectaculaire ET désormais vos recherches Google sublimées en Liquid Glass : fond Sakura HD 4K, cartes de résultats givrées et dock de widgets interactifs (météo, pomodoro, notes, raccourcis) déplaçable à gauche ou à droite !
+                Nouvel onglet Liquid Glass spectaculaire avec widgets utiles, et désormais votre fond d'écran Sakura Bloom 4K affiché automatiquement en arrière-plan de Google Search, tout en conservant vos résultats de recherche Chrome 100% normaux et fluides !
               </p>
             </div>
 
