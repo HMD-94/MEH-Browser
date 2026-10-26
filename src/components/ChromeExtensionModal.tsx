@@ -107,7 +107,7 @@ export const ChromeExtensionModal: React.FC<ChromeExtensionModalProps> = ({
                 Votre Chrome classique devient un navigateur d'exception
               </h3>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Remplace le nouvel onglet terne de Chrome par le design MEH Browser : horloge géante, multi-moteurs (Google, DDG, Qwant), Speed Dial personnalisé, météo en direct et widgets de productivité.
+                Nouvel onglet spectaculaire ET désormais vos recherches Google sublimées en Liquid Glass : fond Sakura HD 4K, cartes de résultats givrées et dock de widgets interactifs (météo, pomodoro, notes, raccourcis) déplaçable à gauche ou à droite !
               </p>
             </div>
 

@@ -131,6 +131,8 @@ export const BrowserContent: React.FC<BrowserContentProps> = ({
     url.includes('duckduckgo.com/?q=') ||
     url.includes('duckduckgo.com/html/?q=') ||
     url.includes('google.com/search') ||
+    url.includes('google.fr/search') ||
+    /google\.[a-z.]+\/search/i.test(url) ||
     url.includes('bing.com/search') ||
     url.includes('search.brave.com') ||
     url.includes('search.yahoo.com') ||

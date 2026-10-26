@@ -24,17 +24,62 @@ export const EXTENSION_MANIFEST = JSON.stringify(
       }
     },
     chrome_url_overrides: {
-      newtab: "newtab.html"
+      "newtab": "newtab.html"
     },
     omnibox: {
-      keyword: "meh"
+      "keyword": "meh"
     },
     background: {
-      service_worker: "background.js"
+      "service_worker": "background.js"
     },
     permissions: [
       "storage",
       "tabs"
+    ],
+    content_scripts: [
+      {
+        "matches": [
+          "*://www.google.com/search*",
+          "*://www.google.fr/search*",
+          "*://www.google.be/search*",
+          "*://www.google.ca/search*",
+          "*://www.google.ch/search*",
+          "*://www.google.co.uk/search*",
+          "*://www.google.de/search*",
+          "*://www.google.es/search*",
+          "*://www.google.it/search*",
+          "*://duckduckgo.com/*",
+          "*://www.bing.com/search*",
+          "*://www.qwant.com/*",
+          "*://www.ecosia.org/search*"
+        ],
+        "css": ["content.css"],
+        "js": ["content.js"],
+        "run_at": "document_end"
+      }
+    ],
+    web_accessible_resources: [
+      {
+        "resources": [
+          "wallpapers/*",
+          "icons/*"
+        ],
+        "matches": [
+          "*://*.google.com/*",
+          "*://*.google.fr/*",
+          "*://*.google.be/*",
+          "*://*.google.ca/*",
+          "*://*.google.ch/*",
+          "*://*.google.co.uk/*",
+          "*://*.google.de/*",
+          "*://*.google.es/*",
+          "*://*.google.it/*",
+          "*://duckduckgo.com/*",
+          "*://*.bing.com/*",
+          "*://*.qwant.com/*",
+          "*://*.ecosia.org/*"
+        ]
+      }
     ]
   },
   null,
@@ -139,20 +184,27 @@ if (chrome.windows && chrome.windows.onCreated) {
 
 export const EXTENSION_README = `# 🌐 MEH Browser — Extension Officielle Google Chrome (Manifest V3)
 
-Félicitations ! Vous venez de télécharger l'extension officielle MEH Browser.
+Félicitations ! Vous venez d'obtenir l'extension officielle MEH Browser.
 
 ---
 
-## 🚀 INSTALLATION EN 3 ÉTAPES (30 secondes) :
+## ✨ NOUVEAUTÉ : RECHERCHE GOOGLE EN LIQUID GLASS & WIDGETS
+- 🌸 Le fond d'écran 4K Sakura Bloom et les effets Liquid Glass restent désormais actifs sur les pages de recherche Google (google.com, google.fr, etc.) !
+- 🎛️ Un dock de widgets interactifs (Météo, Pomodoro, Bloc-notes, Raccourcis) est disponible directement sur la recherche Google, déplaçable à gauche ou à droite.
+- 💨 Les résultats de recherche s'adaptent et se décalent pour une lisibilité parfaite.
+
+---
+
+## 🚀 INSTALLATION / MISE À JOUR EN 3 ÉTAPES (30 secondes) :
 
 1. Décompressez cette archive ZIP (Clic droit > « Extraire tout »).
 2. Ouvrez Google Chrome et accédez à :
    chrome://extensions
 3. En haut à droite, activez l'interrupteur « Mode développeur ».
-4. En haut à gauche, cliquez sur « Charger l'extension non empaquetée ».
+4. En haut à gauche, cliquez sur « Charger l'extension non empaquetée » (ou sur l'icône de rechargement ↻ si vous l'aviez déjà chargée).
 5. ⚠️ IMPORTANT : Sélectionnez bien le dossier qui contient directement le fichier "manifest.json" !
 
-🎉 MEH Browser se lance désormais AUTOMATIQUEMENT au démarrage de Google Chrome et sur chaque nouvel onglet (Ctrl + T) !
+🎉 MEH Browser se lance désormais AUTOMATIQUEMENT au démarrage de Google Chrome, sur chaque nouvel onglet (Ctrl + T) et lors de vos recherches Google !
 
 💡 Conseil : Dans chrome://settings/onStartup, choisissez « Ouvrir la page Nouvel onglet » pour une ouverture instantanée.
 `;
@@ -185,7 +237,16 @@ export async function downloadExtensionBundleZip(): Promise<void> {
   zip.file('README.md', EXTENSION_README);
 
   // 4. Try fetching current live assets if available, or use embedded fallbacks
-  const htmlFiles = ['newtab.html', 'newtab.css', 'newtab.js', 'popup.html', 'popup.css', 'popup.js'];
+  const htmlFiles = [
+    'newtab.html',
+    'newtab.css',
+    'newtab.js',
+    'popup.html',
+    'popup.css',
+    'popup.js',
+    'content.js',
+    'content.css'
+  ];
   for (const file of htmlFiles) {
     try {
       // Try relative fetch first (works on localhost and subpaths)
