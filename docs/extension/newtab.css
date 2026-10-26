@@ -474,22 +474,129 @@ body {
   z-index: 40;
 }
 
+.suggestions-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0.75rem 0.3rem 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.45);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 0.25rem;
+}
+
+.suggestions-clear-btn {
+  background: transparent;
+  border: none;
+  color: rgba(244, 114, 182, 0.85);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.15rem 0.4rem;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.suggestions-clear-btn:hover {
+  color: #f472b6;
+  background: rgba(244, 114, 182, 0.15);
+}
+
 .suggestion-item {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.75rem;
-  padding: 0.6rem 0.9rem;
+  padding: 0.55rem 0.85rem;
   border-radius: 12px;
   font-size: 0.88rem;
   cursor: pointer;
-  color: rgba(255, 255, 255, 0.85);
-  transition: all 0.15s;
+  color: rgba(255, 255, 255, 0.88);
+  transition: all 0.15s ease;
 }
 
 .suggestion-item:hover, .suggestion-item.active {
   background: rgba(255, 255, 255, 0.12);
   color: white;
-  padding-left: 1.1rem;
+  padding-left: 1rem;
+}
+
+.suggestion-item.history-item {
+  color: #ffffff;
+}
+
+.suggestion-item.history-item:hover {
+  background: rgba(244, 114, 182, 0.15);
+}
+
+.suggestion-left {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.suggestion-icon {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.suggestion-item.history-item .suggestion-icon {
+  color: #f472b6;
+  opacity: 1;
+}
+
+.suggestion-text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.suggestion-match {
+  color: #f472b6;
+  font-weight: 700;
+}
+
+.suggestion-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.15rem 0.45rem;
+  border-radius: 6px;
+  background: rgba(244, 114, 182, 0.18);
+  color: #f472b6;
+  border: 1px solid rgba(244, 114, 182, 0.3);
+  flex-shrink: 0;
+}
+
+.btn-remove-history {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  padding: 0.2rem 0.35rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.suggestion-item:hover .btn-remove-history {
+  opacity: 1;
+}
+
+.btn-remove-history:hover {
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.15);
 }
 
 /* Speed Dial Grid */

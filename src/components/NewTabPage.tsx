@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   SpeedDialItem,
   SearchEngine,
@@ -48,6 +48,18 @@ export const NewTabPage: React.FC<NewTabPageProps> = ({
   onOpenCustomize,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false);
+  const searchContainerRef = useRef<HTMLFormElement>(null);
+  const [searchHistory, setSearchHistory] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('meh_search_history');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return ['minecraft', 'youtube', 'discord', 'github'];
+  });
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isEngineDropdownOpen, setIsEngineDropdownOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -148,11 +160,65 @@ export const NewTabPage: React.FC<NewTabPageProps> = ({
     localStorage.setItem('meh_todo_tasks', JSON.stringify(updated));
   };
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) return;
-    onNavigate(searchQuery.trim());
+  const handleSearchSubmit = (e?: React.FormEvent, directQuery?: string) => {
+    if (e) e.preventDefault();
+    const q = (directQuery !== undefined ? directQuery : searchQuery).trim();
+    if (!q) return;
+
+    const filtered = searchHistory.filter(h => h.toLowerCase() !== q.toLowerCase());
+    const updated = [q, ...filtered].slice(0, 15);
+    setSearchHistory(updated);
+    try {
+      localStorage.setItem('meh_search_history', JSON.stringify(updated));
+    } catch {}
+
+    setIsSuggestionsOpen(false);
+    onNavigate(q);
   };
+
+  const handleRemoveHistoryItem = (itemToRemove: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updated = searchHistory.filter(h => h.toLowerCase() !== itemToRemove.toLowerCase());
+    setSearchHistory(updated);
+    try {
+      localStorage.setItem('meh_search_history', JSON.stringify(updated));
+    } catch {}
+  };
+
+  const handleClearAllHistory = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSearchHistory([]);
+    try {
+      localStorage.setItem('meh_search_history', JSON.stringify([]));
+    } catch {}
+    setIsSuggestionsOpen(false);
+  };
+
+  const matchingHistory = useMemo(() => {
+    if (!searchQuery.trim()) return searchHistory.slice(0, 8);
+    const q = searchQuery.toLowerCase().trim();
+    return searchHistory
+      .filter(h => h.toLowerCase().includes(q))
+      .sort((a, b) => {
+        const aStarts = a.toLowerCase().startsWith(q);
+        const bStarts = b.toLowerCase().startsWith(q);
+        if (aStarts && !bStarts) return -1;
+        if (!aStarts && bStarts) return 1;
+        return a.length - b.length;
+      })
+      .slice(0, 6);
+  }, [searchHistory, searchQuery]);
+
+  // Click outside to close suggestions
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setIsSuggestionsOpen(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -310,6 +376,7 @@ export const NewTabPage: React.FC<NewTabPageProps> = ({
 
         {/* Big Central Search Bar with Pure Crystal Liquid Glass */}
         <form
+          ref={searchContainerRef}
           onSubmit={handleSearchSubmit}
           className="w-full relative flex items-center h-14 sm:h-16 px-4 rounded-3xl liquid-glass shadow-2xl transition-all duration-300 group focus-within:ring-2 focus-within:ring-pink-300 focus-within:border-white mb-8 border border-white/40"
         >
@@ -317,7 +384,10 @@ export const NewTabPage: React.FC<NewTabPageProps> = ({
           <div className="relative shrink-0 mr-3">
             <button
               type="button"
-              onClick={() => setIsEngineDropdownOpen(!isEngineDropdownOpen)}
+              onClick={() => {
+                setIsEngineDropdownOpen(!isEngineDropdownOpen);
+                setIsSuggestionsOpen(false);
+              }}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-white/20 hover:bg-white/30 text-xs text-white font-bold transition-all border border-white/30 shadow-sm"
             >
               <span
@@ -363,7 +433,11 @@ export const NewTabPage: React.FC<NewTabPageProps> = ({
           <input
             type="text"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setIsSuggestionsOpen(true);
+            }}
+            onFocus={() => setIsSuggestionsOpen(true)}
             placeholder={`Rechercher avec ${currentSearchEngine.name} ou entrer un site...`}
             className="w-full bg-transparent text-sm sm:text-base text-white font-medium placeholder-white/60 focus:outline-none tracking-wide text-crisp"
             autoFocus
@@ -372,7 +446,10 @@ export const NewTabPage: React.FC<NewTabPageProps> = ({
           {searchQuery ? (
             <button
               type="button"
-              onClick={() => setSearchQuery('')}
+              onClick={() => {
+                setSearchQuery('');
+                setIsSuggestionsOpen(true);
+              }}
               className="p-1.5 rounded-xl hover:bg-white/20 text-white/80 hover:text-white transition-colors mr-1"
             >
               <X className="w-4 h-4" />
@@ -386,6 +463,67 @@ export const NewTabPage: React.FC<NewTabPageProps> = ({
           >
             Explorer
           </button>
+
+          {/* Search History & Matching Suggestions Dropdown */}
+          {isSuggestionsOpen && matchingHistory.length > 0 && (
+            <div className="absolute top-[calc(100%+8px)] inset-x-0 rounded-2xl liquid-glass border border-white/30 shadow-2xl p-2 z-50 text-xs backdrop-blur-2xl animate-in fade-in duration-150">
+              <div className="flex items-center justify-between px-3 py-1.5 text-[10px] uppercase font-bold text-white/50 border-b border-white/10 mb-1">
+                <span>🕒 Recherches récentes</span>
+                <button
+                  type="button"
+                  onClick={handleClearAllHistory}
+                  className="text-pink-300 hover:text-pink-200 transition-colors font-semibold"
+                >
+                  Effacer tout
+                </button>
+              </div>
+
+              <div className="space-y-0.5">
+                {matchingHistory.map((item) => {
+                  const qLower = searchQuery.toLowerCase().trim();
+                  const idx = item.toLowerCase().indexOf(qLower);
+                  return (
+                    <div
+                      key={item}
+                      onClick={() => handleSearchSubmit(undefined, item)}
+                      className="group flex items-center justify-between px-3 py-2 rounded-xl hover:bg-white/20 text-white cursor-pointer transition-colors"
+                    >
+                      <div className="flex items-center gap-2.5 truncate">
+                        <Clock className="w-3.5 h-3.5 text-pink-300 shrink-0" />
+                        <span className="truncate text-xs font-medium">
+                          {qLower && idx >= 0 ? (
+                            <>
+                              {item.slice(0, idx)}
+                              <span className="text-pink-300 font-bold">
+                                {item.slice(idx, idx + qLower.length)}
+                              </span>
+                              {item.slice(idx + qLower.length)}
+                            </>
+                          ) : (
+                            item
+                          )}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-pink-500/20 text-pink-300 border border-pink-400/30">
+                          Historique
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => handleRemoveHistoryItem(item, e)}
+                          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/20 hover:text-red-300 rounded text-white/50 transition-opacity"
+                          title="Supprimer"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </form>
 
         {/* Speed Dial / Raccourcis Favoris with Enhanced Legibility */}

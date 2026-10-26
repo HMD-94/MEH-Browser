@@ -167,15 +167,22 @@ function initSearch() {
   const engineBadge = document.getElementById('engineBadge');
   const engineLabel = document.getElementById('engineLabel');
 
+  const SEARCH_HISTORY_KEY = 'meh_search_history';
+  let activeSuggestionIndex = -1;
+
   // Engine Dropdown toggle
   btnEngineSelect.addEventListener('click', (e) => {
     e.stopPropagation();
     engineMenu.classList.toggle('hidden');
+    suggestionsList.classList.add('hidden');
   });
 
-  document.addEventListener('click', () => {
-    engineMenu.classList.add('hidden');
-    suggestionsList.classList.add('hidden');
+  document.addEventListener('click', (e) => {
+    if (!searchForm.contains(e.target)) {
+      engineMenu.classList.add('hidden');
+      suggestionsList.classList.add('hidden');
+      activeSuggestionIndex = -1;
+    }
   });
 
   // Select Engine
@@ -201,11 +208,60 @@ function initSearch() {
     storage.set({ meh_search_engine: engKey });
   }
 
+  // Search History Management
+  function getSearchHistory(cb) {
+    storage.get([SEARCH_HISTORY_KEY], (res) => {
+      let history = res[SEARCH_HISTORY_KEY];
+      if (!Array.isArray(history) || history.length === 0) {
+        history = ['minecraft', 'youtube', 'discord', 'github'];
+      }
+      cb(history);
+    });
+  }
+
+  function saveSearchQuery(rawQuery) {
+    if (!rawQuery) return;
+    const clean = rawQuery.trim();
+    if (!clean || clean.length < 2) return;
+
+    getSearchHistory((history) => {
+      const filtered = history.filter(h => h.toLowerCase() !== clean.toLowerCase());
+      const updated = [clean, ...filtered].slice(0, 15);
+      storage.set({ [SEARCH_HISTORY_KEY]: updated });
+    });
+  }
+
+  function removeSearchHistoryItem(itemToRemove, e) {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    getSearchHistory((history) => {
+      const updated = history.filter(h => h.toLowerCase() !== itemToRemove.toLowerCase());
+      storage.set({ [SEARCH_HISTORY_KEY]: updated }, () => {
+        renderSearchDropdown(searchInput.value.trim());
+      });
+    });
+  }
+
+  function clearAllSearchHistory(e) {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    storage.set({ [SEARCH_HISTORY_KEY]: [] }, () => {
+      suggestionsList.classList.add('hidden');
+    });
+  }
+
   // Handle Search Submission
   searchForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const query = searchInput.value.trim();
     if (!query) return;
+
+    // Save search query into history for future suggestions
+    saveSearchQuery(query);
 
     // Check if it is a valid direct URL
     if (query.match(/^(https?:\/\/|[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$)/i)) {
@@ -222,8 +278,8 @@ function initSearch() {
   btnClear.addEventListener('click', () => {
     searchInput.value = '';
     btnClear.classList.add('hidden');
-    suggestionsList.classList.add('hidden');
     searchInput.focus();
+    renderSearchDropdown('');
   });
 
   // Input events & Suggestions
@@ -234,52 +290,226 @@ function initSearch() {
       btnClear.classList.remove('hidden');
     } else {
       btnClear.classList.add('hidden');
-      suggestionsList.classList.add('hidden');
-      return;
     }
 
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
-      fetchSuggestions(val);
-    }, 150);
+      renderSearchDropdown(val.trim());
+    }, 120);
   });
 
-  // Live Suggestions from Google Suggest API
-  async function fetchSuggestions(query) {
-    try {
-      const res = await fetch(`https://suggestqueries.google.com/complete/search?client=chrome&hl=fr&gl=fr&q=${encodeURIComponent(query)}`);
-      if (res.ok) {
-        const data = await res.json();
-        const suggestions = data[1] || [];
-        renderSuggestions(suggestions);
-      }
-    } catch {
+  // Show recent searches on click / focus even before typing!
+  searchInput.addEventListener('focus', () => {
+    renderSearchDropdown(searchInput.value.trim());
+  });
+
+  searchInput.addEventListener('click', (e) => {
+    e.stopPropagation();
+    renderSearchDropdown(searchInput.value.trim());
+  });
+
+  // Keyboard navigation through suggestions (ArrowDown, ArrowUp, Enter, Escape)
+  searchInput.addEventListener('keydown', (e) => {
+    const items = suggestionsList.querySelectorAll('.suggestion-item');
+    if (items.length === 0 || suggestionsList.classList.contains('hidden')) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      activeSuggestionIndex = (activeSuggestionIndex + 1) % items.length;
+      highlightActiveSuggestion(items);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      activeSuggestionIndex = (activeSuggestionIndex - 1 + items.length) % items.length;
+      highlightActiveSuggestion(items);
+    } else if (e.key === 'Escape') {
       suggestionsList.classList.add('hidden');
+      activeSuggestionIndex = -1;
+    } else if (e.key === 'Enter' && activeSuggestionIndex >= 0 && items[activeSuggestionIndex]) {
+      e.preventDefault();
+      items[activeSuggestionIndex].click();
     }
+  });
+
+  function highlightActiveSuggestion(items) {
+    items.forEach((item, idx) => {
+      if (idx === activeSuggestionIndex) {
+        item.classList.add('active');
+        const text = item.dataset.query;
+        if (text) searchInput.value = text;
+      } else {
+        item.classList.remove('active');
+      }
+    });
   }
 
-  function renderSuggestions(list) {
-    if (!list || list.length === 0) {
-      suggestionsList.classList.add('hidden');
+  // Combined History & Live Suggestions Engine
+  function renderSearchDropdown(query) {
+    activeSuggestionIndex = -1;
+
+    // CASE 1: Query is empty -> Display recent search history
+    if (!query) {
+      getSearchHistory((history) => {
+        if (!history || history.length === 0) {
+          suggestionsList.classList.add('hidden');
+          return;
+        }
+
+        suggestionsList.innerHTML = '';
+
+        // Header with "Effacer"
+        const header = document.createElement('div');
+        header.className = 'suggestions-header';
+        header.innerHTML = `
+          <span>🕒 Vos recherches récentes</span>
+          <button type="button" class="suggestions-clear-btn" title="Effacer l'historique">Effacer tout</button>
+        `;
+        header.querySelector('.suggestions-clear-btn').addEventListener('click', clearAllSearchHistory);
+        suggestionsList.appendChild(header);
+
+        // History items
+        history.slice(0, 8).forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'suggestion-item history-item';
+          div.dataset.query = item;
+          div.innerHTML = `
+            <div class="suggestion-left">
+              <svg class="suggestion-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <span class="suggestion-text">${escapeHtml(item)}</span>
+            </div>
+            <button type="button" class="btn-remove-history" title="Supprimer de l'historique">✕</button>
+          `;
+
+          div.addEventListener('click', () => {
+            searchInput.value = item;
+            searchForm.dispatchEvent(new Event('submit'));
+          });
+
+          div.querySelector('.btn-remove-history').addEventListener('click', (e) => {
+            removeSearchHistoryItem(item, e);
+          });
+
+          suggestionsList.appendChild(div);
+        });
+
+        suggestionsList.classList.remove('hidden');
+      });
       return;
     }
 
-    suggestionsList.innerHTML = '';
-    list.slice(0, 6).forEach(item => {
-      const div = document.createElement('div');
-      div.className = 'suggestion-item';
-      div.innerHTML = `
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        <span>${escapeHtml(item)}</span>
-      `;
-      div.addEventListener('click', () => {
-        searchInput.value = item;
-        searchForm.dispatchEvent(new Event('submit'));
-      });
-      suggestionsList.appendChild(div);
-    });
+    // CASE 2: User started typing (e.g. "min") -> Match history first, then fetch Google suggestions
+    const qLower = query.toLowerCase();
 
-    suggestionsList.classList.remove('hidden');
+    getSearchHistory(async (history) => {
+      // 1. Find matching history items (startsWith first, then includes)
+      const matchingHistory = history.filter(h => h.toLowerCase().includes(qLower)).sort((a, b) => {
+        const aStarts = a.toLowerCase().startsWith(qLower);
+        const bStarts = b.toLowerCase().startsWith(qLower);
+        if (aStarts && !bStarts) return -1;
+        if (!aStarts && bStarts) return 1;
+        return a.length - b.length;
+      });
+
+      // 2. Fetch live Google suggestions
+      let liveWebSuggestions = [];
+      try {
+        const res = await fetch(`https://suggestqueries.google.com/complete/search?client=chrome&hl=fr&gl=fr&q=${encodeURIComponent(query)}`);
+        if (res.ok) {
+          const data = await res.json();
+          liveWebSuggestions = data[1] || [];
+        }
+      } catch {}
+
+      // Deduplicate web suggestions against matching history
+      const historySet = new Set(matchingHistory.map(h => h.toLowerCase()));
+      const filteredWeb = liveWebSuggestions.filter(s => !historySet.has(s.toLowerCase()));
+
+      const totalItems = [...matchingHistory, ...filteredWeb];
+      if (totalItems.length === 0) {
+        suggestionsList.classList.add('hidden');
+        return;
+      }
+
+      suggestionsList.innerHTML = '';
+
+      // Render matching history items (e.g. "minecraft" when typing "min")
+      matchingHistory.slice(0, 4).forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'suggestion-item history-item';
+        div.dataset.query = item;
+
+        // Highlight matching characters
+        const idx = item.toLowerCase().indexOf(qLower);
+        let highlighted = escapeHtml(item);
+        if (idx >= 0) {
+          const before = escapeHtml(item.slice(0, idx));
+          const match = escapeHtml(item.slice(idx, idx + query.length));
+          const after = escapeHtml(item.slice(idx + query.length));
+          highlighted = `${before}<span class="suggestion-match">${match}</span>${after}`;
+        }
+
+        div.innerHTML = `
+          <div class="suggestion-left">
+            <svg class="suggestion-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span class="suggestion-text">${highlighted}</span>
+          </div>
+          <span class="suggestion-badge">Historique</span>
+          <button type="button" class="btn-remove-history" title="Supprimer de l'historique">✕</button>
+        `;
+
+        div.addEventListener('click', () => {
+          searchInput.value = item;
+          searchForm.dispatchEvent(new Event('submit'));
+        });
+
+        div.querySelector('.btn-remove-history').addEventListener('click', (e) => {
+          removeSearchHistoryItem(item, e);
+        });
+
+        suggestionsList.appendChild(div);
+      });
+
+      // Render live web suggestions
+      const remainingSlots = Math.max(2, 7 - matchingHistory.length);
+      filteredWeb.slice(0, remainingSlots).forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'suggestion-item';
+        div.dataset.query = item;
+
+        const idx = item.toLowerCase().indexOf(qLower);
+        let highlighted = escapeHtml(item);
+        if (idx >= 0) {
+          const before = escapeHtml(item.slice(0, idx));
+          const match = escapeHtml(item.slice(idx, idx + query.length));
+          const after = escapeHtml(item.slice(idx + query.length));
+          highlighted = `${before}<span class="suggestion-match">${match}</span>${after}`;
+        }
+
+        div.innerHTML = `
+          <div class="suggestion-left">
+            <svg class="suggestion-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <span class="suggestion-text">${highlighted}</span>
+          </div>
+        `;
+
+        div.addEventListener('click', () => {
+          searchInput.value = item;
+          searchForm.dispatchEvent(new Event('submit'));
+        });
+
+        suggestionsList.appendChild(div);
+      });
+
+      suggestionsList.classList.remove('hidden');
+    });
   }
 
   // Voice Search (Speech Recognition)

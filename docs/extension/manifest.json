@@ -29,5 +29,50 @@
   "permissions": [
     "storage",
     "tabs"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://www.google.com/search*",
+        "*://www.google.fr/search*",
+        "*://www.google.be/search*",
+        "*://www.google.ca/search*",
+        "*://www.google.ch/search*",
+        "*://www.google.co.uk/search*",
+        "*://www.google.de/search*",
+        "*://www.google.es/search*",
+        "*://www.google.it/search*",
+        "*://duckduckgo.com/*",
+        "*://www.bing.com/search*",
+        "*://www.qwant.com/*",
+        "*://www.ecosia.org/search*"
+      ],
+      "css": ["content.css"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "wallpapers/*",
+        "icons/*"
+      ],
+      "matches": [
+        "*://*.google.com/*",
+        "*://*.google.fr/*",
+        "*://*.google.be/*",
+        "*://*.google.ca/*",
+        "*://*.google.ch/*",
+        "*://*.google.co.uk/*",
+        "*://*.google.de/*",
+        "*://*.google.es/*",
+        "*://*.google.it/*",
+        "*://duckduckgo.com/*",
+        "*://*.bing.com/*",
+        "*://*.qwant.com/*",
+        "*://*.ecosia.org/*"
+      ]
+    }
   ]
 }

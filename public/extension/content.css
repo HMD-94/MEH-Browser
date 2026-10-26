@@ -1,6 +1,6 @@
 /* ==========================================================================
    MEH BROWSER - FOND D'ÉCRAN SAKURA SUR LA RECHERCHE GOOGLE
-   Recherche Google 100% normale, avec UNIQUEMENT le fond d'écran Sakura
+   Recherche Google 100% normale, ultra-fluide à 60/120 FPS avec fond Sakura
    ========================================================================== */
 
 /* 1. Transparence de la page globale pour laisser apparaître le fond d'écran */
@@ -9,7 +9,8 @@ body {
   background-color: transparent !important;
 }
 
-/* 2. Fond d'écran fixé en arrière-plan */
+/* 2. Fond d'écran fixé en arrière-plan ultra-fluide avec accélération GPU
+   (ATTENTION : pas de background-attachment: fixed qui force un repaint CPU à chaque frame de scroll !) */
 #meh-wallpaper-backdrop {
   position: fixed !important;
   inset: 0 !important;
@@ -20,10 +21,18 @@ body {
   background-size: cover !important;
   background-position: center center !important;
   background-repeat: no-repeat !important;
-  background-attachment: fixed !important;
+  /* Promotion GPU : évite tout repaint durant le défilement */
+  transform: translate3d(0, 0, 0) !important;
+  -webkit-transform: translate3d(0, 0, 0) !important;
+  will-change: transform !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+  contain: strict !important;
 }
 
-/* 3. Voile d'ombrage doux pour préserver le contraste normal de Google */
+/* 3. Voile d'ombrage doux ultra-léger sans backdrop-filter
+   (Le backdrop-filter sur 100vw x 100vh causait des saccades au défilement.
+    Le gradient direct avec accélération matérielle est 100% fluide à 60/120 FPS) */
 #meh-wallpaper-overlay {
   position: fixed !important;
   inset: 0 !important;
@@ -31,9 +40,14 @@ body {
   height: 100vh !important;
   z-index: -999998 !important;
   pointer-events: none !important;
-  background: radial-gradient(circle at 50% 15%, rgba(13, 18, 36, 0.40) 0%, rgba(6, 9, 20, 0.75) 100%) !important;
-  backdrop-filter: blur(4px) !important;
-  -webkit-backdrop-filter: blur(4px) !important;
+  background: radial-gradient(circle at 50% 15%, rgba(13, 18, 36, 0.38) 0%, rgba(6, 9, 20, 0.72) 100%) !important;
+  /* Promotion GPU layer */
+  transform: translate3d(0, 0, 0) !important;
+  -webkit-transform: translate3d(0, 0, 0) !important;
+  will-change: transform !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+  contain: strict !important;
 }
 
 /* 4. Rendre transparents les conteneurs pleins pour révéler le fond, sans toucher à la mise en page Google */
