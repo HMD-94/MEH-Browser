@@ -13,7 +13,33 @@ export const WallpaperBackground: React.FC<WallpaperBackgroundProps> = React.mem
   theme,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const [imageError, setImageError] = useState(false);
+
+  // 10-second video loop controller
+  useEffect(() => {
+    const vid = videoRef.current;
+    if (!vid) return;
+
+    const handleTimeUpdate = () => {
+      if (vid.currentTime >= 10) {
+        vid.currentTime = 0;
+        vid.play().catch(() => {});
+      }
+    };
+    const handleEnded = () => {
+      vid.currentTime = 0;
+      vid.play().catch(() => {});
+    };
+
+    vid.addEventListener('timeupdate', handleTimeUpdate);
+    vid.addEventListener('ended', handleEnded);
+
+    return () => {
+      vid.removeEventListener('timeupdate', handleTimeUpdate);
+      vid.removeEventListener('ended', handleEnded);
+    };
+  }, [wallpaper.customImageUrl, wallpaper.mediaType]);
 
   // Animated Fluid Canvas effect if animated
   const isAnimated =
@@ -120,6 +146,27 @@ export const WallpaperBackground: React.FC<WallpaperBackgroundProps> = React.mem
       return (
         <canvas
           ref={canvasRef}
+          className="absolute inset-0 w-full h-full object-cover transition-all duration-300"
+          style={{
+            filter: filterStyle,
+            opacity: wallpaper.opacity,
+          }}
+        />
+      );
+    }
+
+    if (
+      wallpaper.type === 'upload' &&
+      (wallpaper.mediaType === 'video' || wallpaper.customImageUrl?.startsWith('data:video/')) &&
+      wallpaper.customImageUrl
+    ) {
+      return (
+        <video
+          ref={videoRef}
+          src={wallpaper.customImageUrl}
+          autoPlay
+          muted
+          playsInline
           className="absolute inset-0 w-full h-full object-cover transition-all duration-300"
           style={{
             filter: filterStyle,

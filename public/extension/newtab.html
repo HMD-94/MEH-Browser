@@ -10,6 +10,7 @@
 <body class="theme-liquid-glass">
   <!-- Dynamic Background with Overlay -->
   <div id="bgContainer" class="bg-container">
+    <video id="wallpaperVideo" class="wallpaper-video hidden" autoplay muted playsinline></video>
     <div class="bg-overlay"></div>
     <div class="caustic-glow"></div>
   </div>
@@ -335,9 +336,33 @@
         </div>
 
         <div class="form-group mt-4">
-          <label class="form-label">Ou URL personnalisée de votre image :</label>
+          <label class="form-label">📁 Importer un fichier local (Image, GIF animé ou Vidéo) :</label>
+          <div class="custom-file-dropzone" id="dropzoneCustomMedia">
+            <input type="file" id="inputCustomMedia" accept="image/*,video/*,.gif,.mp4,.webm,.mov,.ogg,.mkv" class="hidden-input">
+            <div class="file-drop-content" id="dropContentEmpty">
+              <div class="file-drop-icon">🎬</div>
+              <div class="file-drop-text">
+                <span class="file-drop-title">Glissez un fichier ou <button type="button" id="btnBrowseMedia" class="browse-link">parcourez votre PC</button></span>
+                <span class="file-drop-sub">Compatible : <b>Images</b> (JPG, PNG), <b>GIFs animés</b> et <b>Vidéos</b> (MP4, WebM — boucle les 10 premières secondes)</span>
+              </div>
+            </div>
+            <div id="customMediaStatus" class="custom-media-status hidden">
+              <div class="media-status-info">
+                <span id="customMediaBadge" class="media-type-badge">🎬 Vidéo (10s)</span>
+                <span id="customMediaName" class="media-filename">fichier.mp4</span>
+              </div>
+              <div class="media-status-actions">
+                <button type="button" id="btnChangeMedia" class="glass-pill mini-pill">Changer</button>
+                <button type="button" id="btnClearCustomMedia" class="glass-pill danger-pill mini-pill" title="Supprimer ce fond d'écran">✕ Retirer</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group mt-4">
+          <label class="form-label">Ou URL personnalisée de votre image / GIF :</label>
           <div class="input-with-btn">
-            <input type="url" id="customWpUrl" placeholder="https://images.unsplash.com/..." class="glass-input">
+            <input type="url" id="customWpUrl" placeholder="https://..." class="glass-input">
             <button id="btnApplyCustomWp" class="glass-pill active-pill">Appliquer</button>
           </div>
         </div>

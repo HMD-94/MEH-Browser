@@ -57,10 +57,17 @@ export const CustomizeDrawer: React.FC<CustomizeDrawerProps> = ({
 
   if (!isOpen) return null;
 
-  // Custom Image Upload handler
+  // Custom Media Upload handler (Images, GIFs, Videos 10s)
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    let mediaType: 'image' | 'gif' | 'video' = 'image';
+    if (file.type.startsWith('video/') || file.name.match(/\.(mp4|webm|mov|ogg|mkv)$/i)) {
+      mediaType = 'video';
+    } else if (file.type === 'image/gif' || file.name.match(/\.gif$/i)) {
+      mediaType = 'gif';
+    }
 
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -69,6 +76,8 @@ export const CustomizeDrawer: React.FC<CustomizeDrawerProps> = ({
         onChangeWallpaper({
           ...wallpaper,
           type: 'upload',
+          mediaType: mediaType,
+          customMediaName: file.name,
           customImageUrl: dataUrl,
         });
       }
@@ -300,26 +309,37 @@ export const CustomizeDrawer: React.FC<CustomizeDrawerProps> = ({
               </form>
             </div>
 
-            {/* Custom Image Upload */}
+            {/* Custom Media Upload */}
             <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-3">
               <span className="font-semibold text-white/80 uppercase tracking-wider text-[11px] block">
-                Importer depuis votre appareil
+                📁 Importer depuis votre appareil (Image, GIF, Vidéo 10s)
               </span>
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/*,video/*,.gif,.mp4,.webm,.mov,.ogg,.mkv"
                 onChange={handleImageUpload}
                 className="hidden"
               />
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-white/20 hover:border-sky-400/60 hover:bg-white/5 text-white/80 hover:text-white transition-all"
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-white/20 hover:border-pink-400/60 hover:bg-white/5 text-white/80 hover:text-white transition-all text-xs"
               >
-                <Upload className="w-4 h-4 text-sky-400" />
-                <span>Sélectionner une photo sur votre ordinateur</span>
+                <Upload className="w-4 h-4 text-pink-400" />
+                <span>Sélectionner une image, un GIF ou une vidéo (boucle 10s)</span>
               </button>
+              {wallpaper.type === 'upload' && wallpaper.customMediaName && (
+                <div className="flex items-center justify-between text-xs px-2.5 py-1.5 rounded-lg bg-white/10 text-white/90">
+                  <span className="truncate max-w-[200px] flex items-center gap-1.5">
+                    {wallpaper.mediaType === 'video' ? '🎬' : wallpaper.mediaType === 'gif' ? '✨' : '🖼️'}
+                    {wallpaper.customMediaName}
+                  </span>
+                  <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-pink-500/30 text-pink-300">
+                    {wallpaper.mediaType === 'video' ? 'Vidéo 10s' : wallpaper.mediaType === 'gif' ? 'GIF animé' : 'Image'}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Custom Multi-Color Gradient Builder */}

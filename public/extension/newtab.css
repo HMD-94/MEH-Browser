@@ -41,9 +41,22 @@ body {
   transition: background-image 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.wallpaper-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  pointer-events: none;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+}
+
 .bg-overlay {
   position: absolute;
   inset: 0;
+  z-index: 1;
   background: radial-gradient(circle at 50% 25%, rgba(255, 255, 255, 0.08) 0%, rgba(12, 18, 32, 0.18) 100%);
   backdrop-filter: blur(var(--glass-blur, 0px));
   -webkit-backdrop-filter: blur(var(--glass-blur, 0px));
@@ -52,6 +65,7 @@ body {
 .caustic-glow {
   position: absolute;
   inset: 0;
+  z-index: 2;
   background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 30%), rgba(244, 114, 182, 0.15), transparent 45%);
   pointer-events: none;
 }
@@ -1356,6 +1370,144 @@ body {
   height: 60px;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Custom Media Dropzone */
+.custom-file-dropzone {
+  position: relative;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px dashed rgba(255, 255, 255, 0.22);
+  border-radius: 16px;
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.custom-file-dropzone:hover,
+.custom-file-dropzone.dragover {
+  background: rgba(244, 114, 182, 0.08);
+  border-color: var(--primary-accent);
+  box-shadow: 0 0 20px rgba(244, 114, 182, 0.2);
+}
+
+.hidden-input {
+  display: none;
+}
+
+.file-drop-content {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  text-align: left;
+}
+
+.file-drop-icon {
+  font-size: 1.8rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.file-drop-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.82rem;
+}
+
+.file-drop-title {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.browse-link {
+  background: none;
+  border: none;
+  color: var(--primary-accent);
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: inherit;
+  padding: 0;
+}
+
+.browse-link:hover {
+  filter: brightness(1.2);
+}
+
+.file-drop-sub {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.74rem;
+  line-height: 1.3;
+}
+
+/* Custom Media Active Status */
+.custom-media-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid rgba(244, 114, 182, 0.35);
+}
+
+.media-status-info {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  overflow: hidden;
+}
+
+.media-type-badge {
+  background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
+  color: white;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 20px;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(236, 72, 153, 0.4);
+}
+
+.media-filename {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 170px;
+}
+
+.media-status-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.mini-pill {
+  padding: 0.25rem 0.6rem !important;
+  font-size: 0.72rem !important;
+}
+
+.danger-pill {
+  background: rgba(239, 68, 68, 0.2) !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+  color: #fca5a5 !important;
+}
+
+.danger-pill:hover {
+  background: rgba(239, 68, 68, 0.35) !important;
+  color: white !important;
 }
 
 .modal-footer {

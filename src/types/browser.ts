@@ -56,6 +56,8 @@ export interface WallpaperConfig {
   presetId?: string;
   customImageUrl?: string;
   customOnlineUrl?: string;
+  mediaType?: 'image' | 'gif' | 'video';
+  customMediaName?: string;
   solidColor?: string;
   gradient?: {
     type: 'linear' | 'radial';

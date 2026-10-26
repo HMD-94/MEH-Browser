@@ -34,6 +34,7 @@ export const EXTENSION_MANIFEST = JSON.stringify(
     },
     permissions: [
       "storage",
+      "unlimitedStorage",
       "tabs"
     ],
     content_scripts: [

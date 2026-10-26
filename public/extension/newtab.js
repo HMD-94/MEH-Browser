@@ -1120,16 +1120,95 @@ function initQuotes() {
   }
 }
 
+// IndexedDB Helper for Media Wallpapers (Images, Animated GIFs, and 10s Videos)
+const IDB_NAME = 'meh_wallpaper_db';
+const IDB_STORE = 'media_store';
+function openMediaDB() {
+  return new Promise((resolve) => {
+    if (!window.indexedDB) return resolve(null);
+    try {
+      const req = indexedDB.open(IDB_NAME, 1);
+      req.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(IDB_STORE)) {
+          db.createObjectStore(IDB_STORE);
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => resolve(null);
+    } catch {
+      resolve(null);
+    }
+  });
+}
+
+async function saveMediaToIDB(key, data) {
+  const db = await openMediaDB();
+  if (!db) return false;
+  return new Promise((resolve) => {
+    try {
+      const tx = db.transaction(IDB_STORE, 'readwrite');
+      tx.objectStore(IDB_STORE).put(data, key);
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = () => resolve(false);
+    } catch {
+      resolve(false);
+    }
+  });
+}
+
+async function getMediaFromIDB(key) {
+  const db = await openMediaDB();
+  if (!db) return null;
+  return new Promise((resolve) => {
+    try {
+      const tx = db.transaction(IDB_STORE, 'readonly');
+      const req = tx.objectStore(IDB_STORE).get(key);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => resolve(null);
+    } catch {
+      resolve(null);
+    }
+  });
+}
+
+async function deleteMediaFromIDB(key) {
+  const db = await openMediaDB();
+  if (!db) return false;
+  return new Promise((resolve) => {
+    try {
+      const tx = db.transaction(IDB_STORE, 'readwrite');
+      tx.objectStore(IDB_STORE).delete(key);
+      tx.oncomplete = () => resolve(true);
+      tx.onerror = () => resolve(false);
+    } catch {
+      resolve(false);
+    }
+  });
+}
+
 // 7. Customizer & Wallpapers
 function initCustomizer() {
   const modal = document.getElementById('modalCustomize');
   const btnCustomize = document.getElementById('btnCustomize');
   const bgContainer = document.getElementById('bgContainer');
+  const wallpaperVideo = document.getElementById('wallpaperVideo');
   const blurSlider = document.getElementById('blurSlider');
   const blurVal = document.getElementById('blurVal');
   const btnApplyCustomWp = document.getElementById('btnApplyCustomWp');
   const customWpUrl = document.getElementById('customWpUrl');
   const btnQuickWp = document.getElementById('btnQuickWallpaper');
+
+  // File Dropzone Elements
+  const dropzone = document.getElementById('dropzoneCustomMedia');
+  const fileInput = document.getElementById('inputCustomMedia');
+  const btnBrowseMedia = document.getElementById('btnBrowseMedia');
+  const btnChangeMedia = document.getElementById('btnChangeMedia');
+  const btnClearCustomMedia = document.getElementById('btnClearCustomMedia');
+  const dropContentEmpty = document.getElementById('dropContentEmpty');
+  const customMediaStatus = document.getElementById('customMediaStatus');
+  const customMediaBadge = document.getElementById('customMediaBadge');
+  const customMediaName = document.getElementById('customMediaName');
 
   btnCustomize.addEventListener('click', () => modal.classList.remove('hidden'));
 
@@ -1140,6 +1219,186 @@ function initCustomizer() {
       document.getElementById(targetId).classList.add('hidden');
     });
   });
+
+  // Video Controller: Plays and automatically loops the first 10 seconds of the video
+  function playVideo10s(src) {
+    if (!wallpaperVideo) return;
+    wallpaperVideo.pause();
+    wallpaperVideo.src = src;
+    wallpaperVideo.currentTime = 0;
+    wallpaperVideo.muted = true;
+    wallpaperVideo.playsInline = true;
+    wallpaperVideo.setAttribute('muted', '');
+    wallpaperVideo.setAttribute('playsinline', '');
+    wallpaperVideo.classList.remove('hidden');
+
+    // Strict 10-second loop
+    wallpaperVideo.ontimeupdate = () => {
+      if (wallpaperVideo.currentTime >= 10) {
+        wallpaperVideo.currentTime = 0;
+        wallpaperVideo.play().catch(() => {});
+      }
+    };
+    wallpaperVideo.onended = () => {
+      wallpaperVideo.currentTime = 0;
+      wallpaperVideo.play().catch(() => {});
+    };
+
+    wallpaperVideo.play().catch(() => {});
+    if (bgContainer) {
+      bgContainer.style.backgroundImage = 'none';
+    }
+  }
+
+  function stopVideo() {
+    if (!wallpaperVideo) return;
+    wallpaperVideo.pause();
+    wallpaperVideo.removeAttribute('src');
+    wallpaperVideo.load();
+    wallpaperVideo.classList.add('hidden');
+    wallpaperVideo.ontimeupdate = null;
+    wallpaperVideo.onended = null;
+  }
+
+  function showCustomMediaUI(type, name) {
+    if (dropContentEmpty) dropContentEmpty.classList.add('hidden');
+    if (customMediaStatus) customMediaStatus.classList.remove('hidden');
+
+    if (customMediaBadge) {
+      if (type === 'video') {
+        customMediaBadge.textContent = '🎬 Vidéo (10s auto)';
+        customMediaBadge.style.background = 'linear-gradient(135deg, #ec4899 0%, #a855f7 100%)';
+      } else if (type === 'gif') {
+        customMediaBadge.textContent = '✨ GIF animé';
+        customMediaBadge.style.background = 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)';
+      } else {
+        customMediaBadge.textContent = '🖼️ Image HD';
+        customMediaBadge.style.background = 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)';
+      }
+    }
+    if (customMediaName) {
+      customMediaName.textContent = name || 'Fichier personnalisé';
+    }
+  }
+
+  function hideCustomMediaUI() {
+    if (dropContentEmpty) dropContentEmpty.classList.remove('hidden');
+    if (customMediaStatus) customMediaStatus.classList.add('hidden');
+  }
+
+  function applyCustomMedia(type, dataUrl, name) {
+    currentWallpaper = 'custom_file';
+    document.querySelectorAll('.wp-card').forEach(c => c.classList.remove('active'));
+
+    if (type === 'video') {
+      playVideo10s(dataUrl);
+    } else {
+      stopVideo();
+      if (bgContainer) {
+        bgContainer.style.background = `url("${dataUrl}") center/cover no-repeat`;
+      }
+    }
+    showCustomMediaUI(type, name);
+  }
+
+  // Handle local file selection (Images, GIFs, and Videos)
+  function handleMediaFile(file) {
+    if (!file) return;
+
+    let mediaType = 'image';
+    const fileName = file.name || '';
+    const fileType = file.type || '';
+
+    if (fileType.startsWith('video/') || fileName.match(/\.(mp4|webm|mov|ogg|mkv)$/i)) {
+      mediaType = 'video';
+    } else if (fileType === 'image/gif' || fileName.match(/\.gif$/i)) {
+      mediaType = 'gif';
+    } else {
+      mediaType = 'image';
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const dataUrl = e.target.result;
+      if (!dataUrl) return;
+
+      // Persist in IndexedDB
+      await saveMediaToIDB('custom_wallpaper', {
+        type: mediaType,
+        name: fileName,
+        dataUrl: dataUrl,
+        timestamp: Date.now()
+      });
+
+      // Persist in storage for fast reload & content scripts
+      storage.set({
+        meh_wallpaper: 'custom_file',
+        meh_custom_media_type: mediaType,
+        meh_custom_media_name: fileName,
+        meh_custom_media_data: dataUrl
+      });
+
+      applyCustomMedia(mediaType, dataUrl, fileName);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // Dropzone drag-and-drop
+  if (dropzone) {
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+    dropzone.addEventListener('dragleave', () => {
+      dropzone.classList.remove('dragover');
+    });
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      const f = e.dataTransfer && e.dataTransfer.files ? e.dataTransfer.files[0] : null;
+      if (f) handleMediaFile(f);
+    });
+  }
+
+  if (btnBrowseMedia) {
+    btnBrowseMedia.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (fileInput) fileInput.click();
+    });
+  }
+
+  if (btnChangeMedia) {
+    btnChangeMedia.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (fileInput) fileInput.click();
+    });
+  }
+
+  if (fileInput) {
+    fileInput.addEventListener('change', (e) => {
+      const f = e.target.files ? e.target.files[0] : null;
+      if (f) handleMediaFile(f);
+    });
+  }
+
+  if (btnClearCustomMedia) {
+    btnClearCustomMedia.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      stopVideo();
+      hideCustomMediaUI();
+      await deleteMediaFromIDB('custom_wallpaper');
+      storage.set({
+        meh_wallpaper: 'sakura-bloom',
+        meh_custom_media_type: null,
+        meh_custom_media_name: null,
+        meh_custom_media_data: null
+      });
+      applyWallpaper('sakura-bloom');
+    });
+  }
 
   // Wallpaper Cards
   const wpPresets = {
@@ -1154,17 +1413,29 @@ function initCustomizer() {
 
   function applyWallpaper(wpKey, customUrl = null) {
     currentWallpaper = wpKey;
+    stopVideo();
+    hideCustomMediaUI();
+
     document.querySelectorAll('.wp-card').forEach(c => {
       c.classList.toggle('active', c.dataset.wp === wpKey);
     });
 
     if (customUrl) {
-      bgContainer.style.backgroundImage = `url('${customUrl}')`;
       bgContainer.style.background = `url('${customUrl}') center/cover no-repeat`;
-      storage.set({ meh_wallpaper: 'custom', meh_custom_wp_url: customUrl });
+      storage.set({
+        meh_wallpaper: 'custom',
+        meh_custom_wp_url: customUrl,
+        meh_custom_media_type: null,
+        meh_custom_media_data: null
+      });
     } else {
       bgContainer.style.background = wpPresets[wpKey] || wpPresets['sakura-bloom'];
-      storage.set({ meh_wallpaper: wpKey });
+      storage.set({
+        meh_wallpaper: wpKey,
+        meh_custom_wp_url: null,
+        meh_custom_media_type: null,
+        meh_custom_media_data: null
+      });
     }
   }
 
@@ -1196,6 +1467,10 @@ function initCustomizer() {
     document.documentElement.style.setProperty('--glass-blur', val);
     storage.set({ meh_glass_blur: blurSlider.value });
   });
+
+  // Attach methods for global access
+  window.__meh_applyCustomMedia = applyCustomMedia;
+  window.__meh_stopVideo = stopVideo;
 }
 
 // 8. Mouse Caustics Effect
@@ -1208,16 +1483,36 @@ function initCaustics() {
 
 // 9. Load Saved Preferences
 function loadSavedPreferences() {
-  storage.get(['meh_search_engine', 'meh_wallpaper', 'meh_custom_wp_url', 'meh_glass_blur', 'meh_widgets_visible', 'meh_widget_position'], (res) => {
+  storage.get(['meh_search_engine', 'meh_wallpaper', 'meh_custom_wp_url', 'meh_custom_media_type', 'meh_custom_media_name', 'meh_custom_media_data', 'meh_glass_blur', 'meh_widgets_visible', 'meh_widget_position'], async (res) => {
     if (res.meh_search_engine) {
-      const event = new CustomEvent('changeEngine', { detail: res.meh_search_engine });
       const item = document.querySelector(`.menu-item[data-engine="${res.meh_search_engine}"]`);
       if (item) item.click();
     }
 
-    if (res.meh_wallpaper === 'custom' && res.meh_custom_wp_url) {
+    // Check custom media from file upload (Video 10s, GIF, or Image)
+    if (res.meh_wallpaper === 'custom_file') {
+      let dataUrl = res.meh_custom_media_data;
+      let mediaType = res.meh_custom_media_type;
+      let mediaName = res.meh_custom_media_name;
+
+      if (!dataUrl) {
+        // Fallback to IndexedDB
+        const stored = await getMediaFromIDB('custom_wallpaper');
+        if (stored) {
+          dataUrl = stored.dataUrl;
+          mediaType = stored.type;
+          mediaName = stored.name;
+        }
+      }
+
+      if (dataUrl && window.__meh_applyCustomMedia) {
+        window.__meh_applyCustomMedia(mediaType, dataUrl, mediaName);
+      }
+    } else if (res.meh_wallpaper === 'custom' && res.meh_custom_wp_url) {
+      if (window.__meh_stopVideo) window.__meh_stopVideo();
       document.getElementById('bgContainer').style.background = `url('${res.meh_custom_wp_url}') center/cover no-repeat`;
     } else if (res.meh_wallpaper) {
+      if (window.__meh_stopVideo) window.__meh_stopVideo();
       const card = document.querySelector(`.wp-card[data-wp="${res.meh_wallpaper}"]`);
       if (card) card.click();
     }

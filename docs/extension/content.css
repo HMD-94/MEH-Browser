@@ -11,11 +11,13 @@ body {
 
 /* 2. Fond d'écran fixé en arrière-plan ultra-fluide avec accélération GPU
    (ATTENTION : pas de background-attachment: fixed qui force un repaint CPU à chaque frame de scroll !) */
-#meh-wallpaper-backdrop {
+#meh-wallpaper-backdrop,
+#meh-wallpaper-video {
   position: fixed !important;
   inset: 0 !important;
   width: 100vw !important;
   height: 100vh !important;
+  object-fit: cover !important;
   z-index: -999999 !important;
   pointer-events: none !important;
   background-size: cover !important;

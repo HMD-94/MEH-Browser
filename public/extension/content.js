@@ -24,8 +24,57 @@
 
     // Si l'utilisateur a choisi un autre fond dans MEH Browser, on l'applique
     if (chrome.storage && chrome.storage.local) {
-      chrome.storage.local.get(['meh_wallpaper'], (res) => {
-        if (res && res.meh_wallpaper) {
+      chrome.storage.local.get(['meh_wallpaper', 'meh_custom_media_type', 'meh_custom_media_data', 'meh_custom_wp_url'], (res) => {
+        if (!res) return;
+
+        // 1. Fond Vidéo personnalisé (boucle stricte 10 secondes)
+        if (res.meh_wallpaper === 'custom_file' && res.meh_custom_media_type === 'video' && res.meh_custom_media_data) {
+          let vid = document.getElementById('meh-wallpaper-video');
+          if (!vid) {
+            vid = document.createElement('video');
+            vid.id = 'meh-wallpaper-video';
+            vid.autoplay = true;
+            vid.muted = true;
+            vid.playsInline = true;
+            vid.setAttribute('muted', '');
+            vid.setAttribute('playsinline', '');
+            document.documentElement.insertBefore(vid, overlay);
+          }
+          vid.ontimeupdate = () => {
+            if (vid.currentTime >= 10) {
+              vid.currentTime = 0;
+              vid.play().catch(() => {});
+            }
+          };
+          vid.onended = () => {
+            vid.currentTime = 0;
+            vid.play().catch(() => {});
+          };
+          vid.src = res.meh_custom_media_data;
+          vid.play().catch(() => {});
+          bg.style.display = 'none';
+          return;
+        }
+
+        // Si ce n'est pas une vidéo, supprimer tout élément vidéo existant
+        const existingVid = document.getElementById('meh-wallpaper-video');
+        if (existingVid) existingVid.remove();
+        bg.style.display = '';
+
+        // 2. Fond GIF animé ou Image locale
+        if (res.meh_wallpaper === 'custom_file' && res.meh_custom_media_data) {
+          bg.style.backgroundImage = `url("${res.meh_custom_media_data}")`;
+          return;
+        }
+
+        // 3. Fond URL personnalisée
+        if (res.meh_wallpaper === 'custom' && res.meh_custom_wp_url) {
+          bg.style.backgroundImage = `url("${res.meh_custom_wp_url}")`;
+          return;
+        }
+
+        // 4. Fonds officiels MEH
+        if (res.meh_wallpaper) {
           const wp = res.meh_wallpaper;
           if (wp === 'liquid-glass') {
             bg.style.backgroundImage = `url("${chrome.runtime.getURL('wallpapers/liquid-glass.jpg')}")`;
