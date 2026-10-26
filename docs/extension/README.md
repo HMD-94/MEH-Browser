@@ -13,7 +13,13 @@ Transformez Google Chrome avec l'expérience et le design Liquid Glass de **MEH 
 5. En haut à gauche, cliquez sur le bouton **« Charger l'extension non empaquetée »**.
 6. Sélectionnez le dossier décompressé de l'extension.
 
-🎉 **C'est tout !** Ouvrez un nouvel onglet (`Ctrl + T`) dans Chrome : vous avez désormais l'interface spectaculaire Liquid Glass de MEH Browser !
+🎉 **C'est tout !** MEH Browser se lance désormais **automatiquement dès l'ouverture de Google Chrome** et sur chaque nouvel onglet (`Ctrl + T`) !
+
+💡 **Astuce Démarrage Chrome** :
+Pour que Chrome affiche instantanément MEH Browser dès son ouverture :
+- Allez dans `chrome://settings/onStartup`
+- Sélectionnez : **« Ouvrir la page Nouvel onglet »**
+Grâce au service worker d'arrière-plan, MEH Browser s'ouvre aussi automatiquement si vous aviez d'autres réglages.
 
 ---
 

@@ -33,7 +33,8 @@ export const EXTENSION_MANIFEST = JSON.stringify(
       service_worker: "background.js"
     },
     permissions: [
-      "storage"
+      "storage",
+      "tabs"
     ]
   },
   null,
@@ -92,6 +93,48 @@ function navigateTo(url, disposition) {
     chrome.tabs.create({ url, active: false });
   }
 }
+
+// -------------------------------------------------------------
+// DÉMARRAGE AUTOMATIQUE AU LANCEMENT DE GOOGLE CHROME
+// -------------------------------------------------------------
+
+// 1. Quand l'utilisateur ouvre Google Chrome
+chrome.runtime.onStartup.addListener(async () => {
+  try {
+    const newTabUrl = chrome.runtime.getURL('newtab.html');
+    const tabs = await chrome.tabs.query({ currentWindow: true });
+    
+    // Vérifie si MEH Browser est déjà ouvert
+    const hasMeh = tabs.some(t => t.url && (t.url.includes('newtab.html') || t.url.includes(newTabUrl)));
+    if (!hasMeh) {
+      if (tabs.length === 1 && (tabs[0].url === 'chrome://newtab/' || tabs[0].url === 'about:blank' || !tabs[0].url)) {
+        chrome.tabs.update(tabs[0].id, { url: newTabUrl });
+      } else {
+        chrome.tabs.create({ url: newTabUrl, active: true });
+      }
+    }
+  } catch (e) {
+    chrome.tabs.create({ url: chrome.runtime.getURL('newtab.html'), active: true });
+  }
+});
+
+// 2. Dès le chargement/installation de l'extension
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.tabs.create({ url: chrome.runtime.getURL('newtab.html'), active: true });
+});
+
+// 3. Quand une nouvelle fenêtre Chrome est ouverte
+if (chrome.windows && chrome.windows.onCreated) {
+  chrome.windows.onCreated.addListener(async (win) => {
+    try {
+      const newTabUrl = chrome.runtime.getURL('newtab.html');
+      const tabs = await chrome.tabs.query({ windowId: win.id });
+      if (tabs.length === 1 && (tabs[0].url === 'chrome://newtab/' || tabs[0].url === 'about:blank' || !tabs[0].url)) {
+        chrome.tabs.update(tabs[0].id, { url: newTabUrl });
+      }
+    } catch (e) {}
+  });
+}
 `;
 
 export const EXTENSION_README = `# 🌐 MEH Browser — Extension Officielle Google Chrome (Manifest V3)
@@ -109,7 +152,9 @@ Félicitations ! Vous venez de télécharger l'extension officielle MEH Browser.
 4. En haut à gauche, cliquez sur « Charger l'extension non empaquetée ».
 5. ⚠️ IMPORTANT : Sélectionnez bien le dossier qui contient directement le fichier "manifest.json" !
 
-Ouvrez un nouvel onglet (Ctrl + T) : Profitez de l'expérience Liquid Glass !
+🎉 MEH Browser se lance désormais AUTOMATIQUEMENT au démarrage de Google Chrome et sur chaque nouvel onglet (Ctrl + T) !
+
+💡 Conseil : Dans chrome://settings/onStartup, choisissez « Ouvrir la page Nouvel onglet » pour une ouverture instantanée.
 `;
 
 // Helper to convert base64 to Uint8Array

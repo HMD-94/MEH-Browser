@@ -51,3 +51,46 @@ function navigateTo(url, disposition) {
     chrome.tabs.create({ url, active: false });
   }
 }
+
+// -------------------------------------------------------------
+// DÉMARRAGE AUTOMATIQUE AU LANCEMENT DE GOOGLE CHROME
+// -------------------------------------------------------------
+
+// 1. Quand l'utilisateur ouvre Google Chrome
+chrome.runtime.onStartup.addListener(async () => {
+  try {
+    const newTabUrl = chrome.runtime.getURL('newtab.html');
+    const tabs = await chrome.tabs.query({ currentWindow: true });
+    
+    // Vérifie si MEH Browser est déjà ouvert
+    const hasMeh = tabs.some(t => t.url && (t.url.includes('newtab.html') || t.url.includes(newTabUrl)));
+    if (!hasMeh) {
+      if (tabs.length === 1 && (tabs[0].url === 'chrome://newtab/' || tabs[0].url === 'about:blank' || !tabs[0].url)) {
+        chrome.tabs.update(tabs[0].id, { url: newTabUrl });
+      } else {
+        chrome.tabs.create({ url: newTabUrl, active: true });
+      }
+    }
+  } catch (e) {
+    chrome.tabs.create({ url: chrome.runtime.getURL('newtab.html'), active: true });
+  }
+});
+
+// 2. Dès le chargement/installation de l'extension
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.tabs.create({ url: chrome.runtime.getURL('newtab.html'), active: true });
+});
+
+// 3. Quand une nouvelle fenêtre Chrome est ouverte
+if (chrome.windows && chrome.windows.onCreated) {
+  chrome.windows.onCreated.addListener(async (win) => {
+    try {
+      const newTabUrl = chrome.runtime.getURL('newtab.html');
+      const tabs = await chrome.tabs.query({ windowId: win.id });
+      if (tabs.length === 1 && (tabs[0].url === 'chrome://newtab/' || tabs[0].url === 'about:blank' || !tabs[0].url)) {
+        chrome.tabs.update(tabs[0].id, { url: newTabUrl });
+      }
+    } catch (e) {}
+  });
+}
+

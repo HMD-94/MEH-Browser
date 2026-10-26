@@ -249,10 +249,23 @@ export const ChromeExtensionModal: React.FC<ChromeExtensionModalProps> = ({
             </div>
           </div>
 
+          {/* Automatic launch tip */}
+          <div className="p-3.5 rounded-xl bg-pink-500/15 border border-pink-400/30 text-xs text-pink-200 flex items-start gap-2.5">
+            <span className="text-base shrink-0">⚡</span>
+            <div className="space-y-1">
+              <span className="font-bold text-pink-300">
+                Lancement automatique au démarrage de Google Chrome :
+              </span>
+              <p className="text-[11px] text-pink-100/90 leading-relaxed">
+                L'extension est désormais programmée avec un service worker qui ouvre automatiquement MEH Browser dès que vous lancez Chrome. Pour une ouverture ultra-rapide à chaque démarrage, dans Chrome ouvrez <code className="px-1 py-0.5 rounded bg-black/40 text-pink-300 font-mono">chrome://settings/onStartup</code> et cochez <b>« Ouvrir la page Nouvel onglet »</b>.
+              </p>
+            </div>
+          </div>
+
           <div className="pt-2 flex items-center gap-2 text-emerald-400 text-xs font-semibold">
             <CheckCircle2 className="w-4 h-4 shrink-0" />
             <span>
-              Terminé ! Appuyez sur <kbd className="px-1.5 py-0.5 rounded bg-white/10 border border-white/20 font-mono text-[10px]">Ctrl + T</kbd> dans Chrome pour admirer votre nouvel onglet MEH Browser.
+              Terminé ! MEH Browser se lance automatiquement dès l'ouverture de Chrome et sur chaque nouvel onglet (<kbd className="px-1.5 py-0.5 rounded bg-white/10 border border-white/20 font-mono text-[10px]">Ctrl + T</kbd>).
             </span>
           </div>
         </div>
