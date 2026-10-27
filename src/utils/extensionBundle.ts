@@ -141,46 +141,12 @@ function navigateTo(url, disposition) {
 }
 
 // -------------------------------------------------------------
-// DÉMARRAGE AUTOMATIQUE AU LANCEMENT DE GOOGLE CHROME
+// GESTION PROPRE DU NOUVEL ONGLET
+// Le Nouvel Onglet de MEH Browser est géré nativement par
+// "chrome_url_overrides.newtab" dans manifest.json.
+// Aucun détournement forcé : les raccourcis (Gmail, YouTube, etc.)
+// et les fichiers locaux (.html, .pdf) s'ouvrent normalement et directement.
 // -------------------------------------------------------------
-
-// 1. Quand l'utilisateur ouvre Google Chrome
-chrome.runtime.onStartup.addListener(async () => {
-  try {
-    const newTabUrl = chrome.runtime.getURL('newtab.html');
-    const tabs = await chrome.tabs.query({ currentWindow: true });
-    
-    // Vérifie si MEH Browser est déjà ouvert
-    const hasMeh = tabs.some(t => t.url && (t.url.includes('newtab.html') || t.url.includes(newTabUrl)));
-    if (!hasMeh) {
-      if (tabs.length === 1 && (tabs[0].url === 'chrome://newtab/' || tabs[0].url === 'about:blank' || !tabs[0].url)) {
-        chrome.tabs.update(tabs[0].id, { url: newTabUrl });
-      } else {
-        chrome.tabs.create({ url: newTabUrl, active: true });
-      }
-    }
-  } catch (e) {
-    chrome.tabs.create({ url: chrome.runtime.getURL('newtab.html'), active: true });
-  }
-});
-
-// 2. Dès le chargement/installation de l'extension
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.tabs.create({ url: chrome.runtime.getURL('newtab.html'), active: true });
-});
-
-// 3. Quand une nouvelle fenêtre Chrome est ouverte
-if (chrome.windows && chrome.windows.onCreated) {
-  chrome.windows.onCreated.addListener(async (win) => {
-    try {
-      const newTabUrl = chrome.runtime.getURL('newtab.html');
-      const tabs = await chrome.tabs.query({ windowId: win.id });
-      if (tabs.length === 1 && (tabs[0].url === 'chrome://newtab/' || tabs[0].url === 'about:blank' || !tabs[0].url)) {
-        chrome.tabs.update(tabs[0].id, { url: newTabUrl });
-      }
-    } catch (e) {}
-  });
-}
 `;
 
 export const EXTENSION_README = `# 🌐 MEH Browser — Extension Officielle Google Chrome (Manifest V3)
